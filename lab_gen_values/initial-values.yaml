@@ -677,7 +677,7 @@ opentelemetry-collector:
           exporters: [prometheus, logging, otlp]
 
 jaeger:
-  enabled: true
+  enabled: false
   provisionDataStore:
     cassandra: false
   allInOne:
