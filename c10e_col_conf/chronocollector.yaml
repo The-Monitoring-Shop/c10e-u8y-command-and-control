@@ -1,0 +1,541 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: chronocollector
+  name: chronocollector
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: chronocollector
+  name: chronocollector
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - nodes
+  - pods
+  - endpoints
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/metrics
+  verbs:
+  - get
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app: chronocollector
+  name: chronocollector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: chronocollector
+subjects:
+- kind: ServiceAccount
+  name: chronocollector
+  namespace: default
+---
+apiVersion: v1
+data:
+  config.yml: |
+    # logging configures logging parameters for the collector.
+    logging:
+    # level is the level of verbosity that the collector will emit --> Default is `info`.
+      level: ${LOGGING_LEVEL:info}
+
+    # metrics configuration - configures how the collector emits metrics.
+    # Note: These metrics are produced by the collector itself.
+    metrics:
+      # scope configures how metric names will be formed.
+      scope:
+        # prefix defines prefix for all metric names.
+        prefix: "chronocollector"
+        # tags define custom tags that will be attached to every metric from the collector.
+        tags: {}
+      # prometheus defines options for the Prometheus reporter.
+      prometheus:
+        # handlerPath is the route on which metrics will be served.
+        handlerPath: /metrics
+      # sanitization indicates that metrics will be in the Prometheus format.
+      sanitization: prometheus
+      # samplingRate is the rate at which metrics will be sampled. Default is 1.0.
+      samplingRate: 1.0
+      # extended configures extra process level metrics that will be emitted.
+      # Options include: none, simple, moderate, detailed, See below link for more information on options:
+      # https://bit.ly/39v2yOO
+      extended: none
+
+    # wrapper configuration - configuration for the collector wrapper.
+    wrapper:
+      # listenAddress is the address that collector wrapper will serve requests on. Currently supports /metrics if enabled.
+      listenAddress: "${LISTEN_ADDRESS:0.0.0.0:3029}"
+      logFilter:
+        # enables the log filtering configuration.
+        enabled: ${LOG_FILTERING_ENABLED:false}
+      # metrics configuration - configures how the collector wrapper emits metrics.
+      # Note: These metrics are produced by the collector itself.
+      metrics:
+        # scope configures how metric names will be formed.
+        scope:
+          # prefix defines prefix for all metric names.
+          prefix: "chronocollector"
+          # tags define custom tags that will be attached to every metric from the collector.
+          tags: {}
+        # prometheus defines options for the Prometheus reporter.
+        prometheus:
+          # handlerPath is the route on which metrics will be served.
+          handlerPath: /metrics
+        # sanitization indicates that metrics will be in the Prometheus format.
+        sanitization: prometheus
+        # samplingRate is the rate at which metrics will be sampled. Default is 1.0.
+        samplingRate: 1.0
+        # extended configures extra process level metrics that will be emitted.
+        # Options include: none, simple, moderate, detailed, See below link for more information on options:
+        # https://bit.ly/39v2yOO
+        extended: none
+
+
+    # listenAddress is the address that collector will serve requests on. Currently supports /metrics and the remote write endpoint if enabled.
+    listenAddress: "${LISTEN_ADDRESS:0.0.0.0:3030}"
+
+    # labels defines key value pairs that will be appended to each metric being sent to the Chronosphere backend.
+    labels:
+      # defaults defines the default labels.
+      defaults:
+        tenant_k8s_cluster: ${KUBERNETES_CLUSTER_NAME:""}
+
+    # backend defines what backend the collector forwards metrics to. The chronogateway is the main backend for Chronosphere. The below is needed to configure and send metrics to the `chronogateway`.
+    backend:
+      # type controls which backend configuration to read from. It can either be `gateway` or `prometheusRemoteWrite`.
+      type: ${BACKEND_TYPE:gateway}
+      # annotatedMetrics controls whether the backend supports annotated metrics in which case the collector will use an annotated write request to send the metrics.
+      annotatedMetrics: ${BACKEND_ANNOTATED_METRICS:false}
+      gateway:
+        # address is what the collector sends to `company.chronosphere.io:443`. This can also be a proxy address.
+        address: ${GATEWAY_ADDRESS:""}
+        # servername is the gateway server name in case address is a proxy address.
+        serverName: ${GATEWAY_SERVER_NAME:""}
+        # insecure determines whether or not metrics are allowed via an insecure connection.
+        # Note: Setting to `false` ensures that forwarding metrics are not allowed via an insecure connection. This should only be set to `true` for development purposes.
+        insecure: ${GATEWAY_INSECURE:false}
+        # cert and certSkipVerify are both related to the TLS. cert allows specifying a certificate chain for the CA.
+        # certSkipVerify allows skipping the TLS verification.
+        # Note: both cert and certSkipVerify are hardly ever used / used primarily for tesing.
+        # The config is set to use the system’s default “certificate pool”, but fields can be altered if there are special requirements or a non-standard cert setup.
+        cert: ${GATEWAY_CERT:""}
+        certSkipVerify: ${GATEWAY_CERT_SKIP_VERIFY:false}
+        # A file containing the API token. If present will override the env var setting.
+        apiTokenFile: ${API_TOKEN_FILE:""}
+      # Supported values here are "snappy" or "zstd". Zstd will lower your egress traffic byte count,
+      # but use more CPU and memory in the Collector process.
+      # The default is "snappy".
+      compressionFormat: "snappy"
+      # Connection pooling is helpful for large collectors that send on the order of > 100 rps to the
+      # gateway backend.
+      connectionPooling:
+        # Enables connection pooling. By default, this is disabled.
+        enabled: false
+        # The pool size is tunable with values from [1,8]. If not specified and pooling is enabled, then
+        # the default size is 4.
+        poolSize: 0
+
+    # # In order to send metrics to the Prometheus remote write backend (vs. through the `chronogateway`), then uncomment the below section and change type to `prometheusRemoteWrite`.
+    # backend:
+    #  type: prometheusRemoteWrite
+    #  prometheusRemoteWrite:
+        # writeURL is the Prometheus remote write endpoint that metrics will be written to. This will typically be an m3coordinator.
+        # writeURL: ${PROMETHEUS_REMOTE_WRITE_ADDRESS:""}
+        # httpClientTimeout is the deadline for the Prometheus remote write backend to accept the remote write request.
+        # httpClientTimeout: ${PROMETHEUS_REMOTE_WRITE_HTTP_CLIENT_TIMEOUT:30s}
+        # userAgent is the HTTP user agent that the collector will send requests with.
+        # userAgent: ${PROMETHEUS_REMOTE_WRITE_USER_AGENT:chronosphere.io/chronocollector}
+
+    # discovery controls how the collector will discover targets to scrape.
+    discovery:
+      # kubernetes defines settings for discovering targets in the same Kubernetes cluster the collector is running in.
+      kubernetes:
+        # enabled indicates whether Kubernetes discovery is enabled.
+        enabled: true
+      # # serviceMonitorsEnabled indicates whether to use service monitors for job config generation.
+      #   serviceMonitorsEnabled: true
+      #   # endpointsDiscoveryEnabled discovery of endpoints. Requires service monitors to be enabled.
+      #   endpointsDiscoveryEnabled: true
+      #   # useEndpointSlices will use EndpointSlices instead of Endpoints when endpointsDiscoveryEnabled is tue.
+      #   # Requires service monitors to be enabled, and the kubernetes server is running at least v1.19. EndpointSlices
+      #   # are significantly less resource intensive and are highly recommended if using ServiceMonitors.
+      #   useEndpointSlices: true
+      #   # kubeSystemEndpointsDiscoveryEnabled allows additional discovery of kube system endpoints. This can get expensive.
+      #   kubeSystemEndpointsDiscoveryEnabled: true
+      #   # podMatchingStrategy determines how service monitors / annotations are to be used for discovery purposes. The
+      #   # options are - all, annotations_first, service_monitors_first, service_monitors_only.
+      #   podMatchingStrategy: all
+      #   # metadataConfig is a list of configs around the metadata for discovered Kubernetes objects. Use this section to specify
+      #   # any Kubernetes labels or annotations that you want to keep as Prometheus labels on the metric.
+      #   metadataConfig:
+      #     - resource: "pod"
+      #       annotationsToKeep:
+      #         - my.pod.annotation
+      #         - another.pod.annotation
+      #       labelsToKeep:
+      #         - app
+      # kubeletMonitoring defines configuration for scraping metrics from kubelet on the host that the collector is running on.
+        kubeletMonitoring:
+      #    # enabled indicates whether or not the kubelet will be monitored. This is deprecated. Use the specific kubeletMetricsEnabled
+      #    # and cadvisorMetricsEnabled flags.
+          enabled: ${KUBERNETES_KUBELET_MONITORING_ENABLED:false}
+          # port indicates the port that the kubelet is running on.
+          port: 10250
+          # bearerTokenFile indicates path to file containing collector service account token.
+          bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+          # # labelsToAugment indicates the pod labels to augment on to the kubelet metrics
+          # labelsToAugment: ["app"]
+          # # annotationsToAugment indicates the pod annotations to augment on to the kubelet metrics
+          # annotationsToAugment: ["app.kubernetes.io/component"]
+          # # The following two flags supersede the enabled flag above. Either the below two or enabled should be used, not both.
+          # # kubeletMetricsEnabled enables kubelet metrics.
+          # kubeletMetricsEnabled: true
+          # # cadvisorMetricsEnabled enables cadvisor metrics.
+          # cadvisorMetricsEnabled: true
+          # # probesMetricsEnabled enables probes metrics.
+          # probesMetricsEnabled: true
+    # # The collector config can also be set to scrape a static Prometheus endpoint.
+    # # Note: Kubernetes and Prometheus discovery can be enabled at the same time.
+    # # In order to use this functionality, uncomment the below section, and make sure the target is updated to the correct endpoint.
+    # # See the below for an example of a target that scrapes a node_exporter listening on "localhost:9100".
+      # prometheus:
+      #   enabled: true
+      #   scrape_configs:
+      #     # job_name: The job name assigned to scraped metrics by default.
+      #     - job_name: 'node_exporter'
+      #     # scrape_interval: How frequently to scrape targets from this job.
+      #       scrape_interval: 30s
+      #     # scrape_timeout: Per-scrape timeout when scraping this job.
+      #       scrape_timeout: 30s
+      #     # static_configs: List of labeled statically configured targets for this job.
+      #       static_configs:
+      #       # Note: make sure to update the target to correct endpoint.
+      #         - targets: ['localhost:9100']
+
+    # # Push configures push mechanisms to send metrics.
+    # # prometheusRemoteWrite is configuration for prometheus remote write, that allows forwarding remote write requests to Chronosphere.
+    # # Remote write endpoint will be available at /remote/write
+    # push:
+    #   # prometheusRemoteWrite is configuration for prometheus remote write, that allows forwarding remote write requests to Chronosphere.
+    #   # Remote write endpoint will be available at /remote/write
+    #   prometheusRemoteWrite:
+    #     enabled: true
+    #   # statsd is configuration for sending statsd metrics to Chronosphere. It is hosted as a UDP server at the provided listen address.
+    #   statsd:
+    #     enabled: true
+    #     listenAddress: 0.0.0.0:3031
+        # # dropRules allow you to specify metrics to drop at the Collector level. The format
+        # # is similar to those you would create in the Web UI to drop at ingest.
+        # dropRules:
+          # # label is the metric label that you are interested in dropping.
+          # # If they are based on the statsd metric values, you will use the `__gN__` format
+          # # Chronosphere coerces them to in order to match Prometheus format.
+          # - label: __g0__
+            # # value is what the value of that label should be in order for the rule
+            # # to trigger and drop the metric.
+            # value: bar
+            # # invert would turn the match from an equals operation to a not-equals operation.
+            # # The default is false so that all matches are equals operations by default.
+            # invert: false
+        # # optional push interval controls how frequently metrics are pushed to the backend (Default 1s), if the packet size limit is not hit.
+        # pushInterval: 1s
+        # # optional prefix adds a prefix to all statsd metrics pushed.
+        # prefix: "staging.foo"
+      # # dogstatsd is a configuration for sending DogStatsD metrics to Chronosphere. It is hosted as a UDP server at the provided listen address.
+      # # It can work in three different modes when converting DogStatsD METRIC_NAME (as described here: https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/?tab=metrics) into prometheus labels:
+      # # - regular - DogStatsD METRIC_NAME will be assigned to prometheus `__name__` tag replacing all non-alphanumeric and non-dot characters into underscores. And dots will be converted into a colon `:`.
+      #   # For example METRIC_NAME `my.very.first-metric` will be converted into my:very:first_metric{}
+      # # - graphite - prometheus `__name__` tag will get constant `stat` name and DogStatsD METRIC_NAME will be assigned to
+      #   # prometheus tag which is set in this configuration `namelabelname` config (by default `name`).
+      #   # For example METRIC_NAME `my.very.first-metric` will be converted into stat{name="my.very.first-metric"}
+      # # - graphite_expanded - same as `graphite` mode it's just expanded splitting METRIC_NAME using `.` (dot) as splitter and storing separate parts into a separate tags `t0`, `t1`, `t2`, etc.
+      #   # For example METRIC_NAME `my.very.first-metric` will be converted into stat{name="my.very.first-metric", t0="my", t1="very", t2="first-metric"}
+      # dogstatsd:
+      #   enabled: true
+      #   listenAddress: 0.0.0.0:9125
+      #   mode: regular, graphite or graphite_expanded
+      # # optional namelabelname defines the label name which should be used to store METRIC_NAME in `graphite`and `graphite_expanded`modes.
+      #   namelabelname: name
+      # # optional labels adds a tag(s) to all DogStatsD metrics pushed.
+      #   labels:
+      #     env: "staging"
+      #     foo: "bar"
+      # optional prefix adds a prefix to all DogStatsD metrics pushed. For example, setting this value to "qa" prefixes all metric names with qa. A metric like "build_info.ip" becomes "qa.build_info.ip".
+      #   prefix: "qa"
+      # # optional push interval controls how frequently metrics are pushed to the backend (Default 1s), if the packet size limit is not hit.
+      # pushInterval: 1s
+      # # carbon is configuration for sending carbon metrics to Chronosphere. It is hosted as a UDP server at the provided listen address.
+      # carbon:
+      #   enabled: true
+      #   listenAddress: 0.0.0.0:3032
+        # # optional push interval controls how frequently metrics are pushed to the backend (Default 1s), if the packet size limit is not hit.
+        # pushInterval: 1s
+        # # optional prefix adds a prefix to all statsd metrics pushed.
+        # prefix: "staging.foo"
+
+    # kubernetes encapsulates configuration related to scraping metrics on Kubernetes.
+    kubernetes:
+      # client configures the Kubernetes client.
+      client:
+        # outOfCluster is true if the collector is running outside of a Kubernetes client (only used for testing).
+        outOfCluster: ${KUBERNETES_CLIENT_OUT_OF_CLUSTER:false}
+      # processor defines configuration for processing pods discovered on Kubernetes.
+      processor:
+        # annotationsPrefix is the prefix for annotations that the collector will use to scrape discovered pods.
+        annotationsPrefix: ${KUBERNETES_PROCESSOR_ANNOTATIONS_PREFIX:"prometheus.io/"}
+
+    # # scrape is the global scrape config. It is not tied to a single job, and can be overridden with annotations and the job config.
+    # # Visit the Scrape Config section under Collector documentation for more information.
+    # scrape:
+    # # defaults are the global scrape options when none other are configured.
+    #  defaults:
+    #    metricsPath: "/metrics"
+    #    scheme: "http"
+    #    scrapeInterval: "10s"
+    #    scrapeTimeout: "10s"
+    #    honorLabels: "false"
+    #    honorTimestamps: "true"
+    #    relabels: <relabel_config>
+    #    metricRelabels: <relabel_config>
+    #  # enableStalenessMarker enables staleness markers. Special floating point NaNs are emitted
+    #  # when scrapes fail or targets are removed. These events form an important signal to PromQL
+    #  # to stop interpolating the related series.
+    #  enableStalenessMarker: <true|false>
+    #  sanitization:
+    #    # dropDuplicateSeries prevents multiple series from being appended when they have identical
+    #    # label sets. This deduplication only applies to series for the same target.
+    #    dropDuplicateSeries: <true|false>
+
+    # ingestion buffering configures any collector side ingest buffering
+    ingestionBuffering:
+      # The retry buffer is used to replay metric writes in the event of transient failures.
+      # This is a best effort buffer
+      retry:
+        # enabled will toggle on the retry buffer
+        enabled: false
+        # This must be writable directory and is used to buffer failures
+        directory: /etc/retry_buffer
+        # How long individual metric uploads should be retried before being considered permanently failed.
+        # Values greater than 90 seconds may lead to unexpected behavior and are not supported.
+        defaultTTLInSeconds: 90
+        # The collector will use strictly less than this amount of disk space.
+        maxBufferSizeMB: 1024
+
+    # jobs:
+    # # job name is the name assigned to scraped metrics by default. It is used to override specific jobs if using Kubernetes annotations.
+    # # job name must be unique across all scrape configurations.
+    # - name: "foo"
+    # # Visit the Prometheus site for more information and default values for scrape config (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config).
+    #   options:
+    #     metricsPath: <path>
+    #     params: <string>
+    #     scheme: <scheme>
+    #     scrapeInterval: <scrape_interval>
+    #     scrapeTimeout: <scrape_timeout>
+    #     honorLabels: <boolean>
+    #     honorTimestamps: <boolean>
+    # # Visit the Prometheus site for more information and default values for relabel config (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).
+    #     relabels: <relabel_config>
+    #     metricRelabels: <relabel_config>
+    #   # Optional port to override the scrape job created with.
+    #     port: <port>
+
+    # spans:
+    #   enabled: false
+    #   spanDecoratorEnabled: true
+    #   logSpansOnly: false
+    #   otel:
+    #     enabled: false
+    #     listenAddress: 0.0.0.0:4317
+    #   jaeger:
+    #     enabled: false
+
+    # debug configures the debug HTTP endpoints available at the listenAddress.
+    debug:
+      # disabled will toggle them off. By default this is false and they are enabled.
+      disabled: false
+
+    # # serviceMonitor will change config values specific to jobs generated from service
+    # # monitors.
+    # serviceMonitor:
+      # # configPushInterval determines the interval at which detected updates will be reflected
+      # # in scraping jobs
+      # configPushInterval: <timespan>
+
+      # # defaultJobRelabels will be used for all service monitor jobs.
+      # # Visit the Prometheus site for more information and default values for relabel config (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).
+      # defaultJobRelabels: <relabel_config>
+
+      # # defaultMetricRelabels will be used for all metrics in service monitor jobs.
+      # # Visit the Prometheus site for more information and default values for relabel config (https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).
+      # defaultMetricRelabels: <relabel_config>
+
+      # # allowSkipPodInfo indicates that pod info can be skipped while matching endpoints with service monitors. This should
+      # # only be used when we are running the collector as a deployment with a single instance and have service monitors
+      # # enabled. As this results in a collector instance scraping every endpoint it sees if a service monitor exists.
+      # allowSkipPodInfo: true
+
+      # serviceMonitorSelector:
+      #   # If matchAll is set to true, all service monitors are matched. Otherwise, match rules are logically ANDed
+      #   # together.
+      #   matchAll: false
+      #   matchLabelsRegexp:
+      #     labelone: '[a-z]+'
+      #     labeltwo: '[a-z]+'
+      #   matchLabels:
+      #     labelone: foo
+      #     labeltwo: bar
+      #   matchExpressions:
+      #     # Matches ServiceMonitors that have a label examplelabel with values "a" or "b".
+      #     - label: examplelabel
+      #       operator: In
+      #       values:
+      #         - a
+      #         - b
+      #     # Matches ServiceMonitors that either don't have the label examplelabel or the value of examplelabel is not "a"
+      #     # or "b".
+      #     - label: examplelabel
+      #       operator: NotIn
+      #       values:
+      #         - a
+      #         - b
+      #     # Matches ServiceMonitors that have a label examplelabel with any value.
+      #     - label: examplelabel
+      #       operator: Exists
+      #     # Matches ServiceMonitors that do not have a label examplelabel.
+      #     - label: examplelabel
+      #       operator: DoesNotExist
+kind: ConfigMap
+metadata:
+  labels:
+    app: chronocollector
+  name: chronocollector-config
+  namespace: default
+---
+apiVersion: v1
+data:
+  address: dW5pdmVyc2l0eS5jaHJvbm9zcGhlcmUuaW86NDQz
+  api-token: ZjllMjZmZDgyOTkzY2M0OTRhNmE0YjlhZjc3NTM3ZjhkM2RiODRkYjZlMjI2YjA1NTZkMTBjYjJkYTFlMjI0ZQo=
+kind: Secret
+metadata:
+  labels:
+    app: chronocollector
+  name: chronosphere-secret
+  namespace: default
+type: Opaque
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: chronocollector
+  name: chronocollector
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: chronocollector
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "3030"
+        prometheus.io/scrape: "true"
+      labels:
+        app: chronocollector
+    spec:
+      containers:
+      - env:
+        - name: GATEWAY_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              key: address
+              name: chronosphere-secret
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: api-token
+              name: chronosphere-secret
+        - name: KUBERNETES_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: KUBERNETES_CLUSTER_NAME
+          value: default
+        - name: KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: gcr.io/chronosphereio/chronocollector:v0.102.0
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 3030
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: chronocollector
+        ports:
+        - containerPort: 3030
+          name: http
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+          requests:
+            cpu: 1000m
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /etc/chronocollector
+          name: chronocollector-config
+      serviceAccount: chronocollector
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - configMap:
+          name: chronocollector-config
+        name: chronocollector-config
+  updateStrategy:
+    type: RollingUpdate
