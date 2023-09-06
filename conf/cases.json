@@ -1,0 +1,17 @@
+{
+    "cases":
+    [
+        {
+            "id":   "0001",
+            "name": "Increased Load #1",
+            "desc": "Increase the load on the frontend from 10 users to 50 users.",
+            "type": "values"
+        },
+        {
+            "id":   "0010",
+            "name": "Errors #1",
+            "description": "Break the productcatalogservice URL in frontend so that trace errors start occuring",
+            "type": "values"
+        }
+    ]
+}
