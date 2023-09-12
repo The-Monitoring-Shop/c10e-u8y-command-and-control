@@ -252,11 +252,11 @@ data:
     # # Push configures push mechanisms to send metrics.
     # # prometheusRemoteWrite is configuration for prometheus remote write, that allows forwarding remote write requests to Chronosphere.
     # # Remote write endpoint will be available at /remote/write
-    push:
+    # push:
     #   # prometheusRemoteWrite is configuration for prometheus remote write, that allows forwarding remote write requests to Chronosphere.
     #   # Remote write endpoint will be available at /remote/write
-      prometheusRemoteWrite:
-        enabled: true
+    #   prometheusRemoteWrite:
+    #     enabled: true
     #   # statsd is configuration for sending statsd metrics to Chronosphere. It is hosted as a UDP server at the provided listen address.
     #   statsd:
     #     enabled: true
@@ -460,23 +460,6 @@ metadata:
   name: chronosphere-secret
   namespace: default
 type: Opaque
----
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: chronocollector
-  namespace: default
-  labels:
-    app: chronocollector
-spec:
-  ports:
-    - port: 3030
-      name: http
-  selector:
-    app: chronocollector
-status:
-  loadBalancer: {}
 ---
 apiVersion: apps/v1
 kind: DaemonSet

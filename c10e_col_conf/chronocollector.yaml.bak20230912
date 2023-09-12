@@ -461,23 +461,6 @@ metadata:
   namespace: default
 type: Opaque
 ---
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: chronocollector
-  namespace: default
-  labels:
-    app: chronocollector
-spec:
-  ports:
-    - port: 3030
-      name: http
-  selector:
-    app: chronocollector
-status:
-  loadBalancer: {}
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

@@ -746,6 +746,8 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
               action: keep
               regex: true
+      remote_write:
+        - url: http://chronocollector:3030/remote/write
 
 grafana:
   enabled: true
