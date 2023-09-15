@@ -10,7 +10,7 @@
         {
             "id":   "0010",
             "name": "Errors #1",
-            "description": "Break the productcatalogservice URL in frontend so that trace errors start occuring",
+            "desc": "Break the productcatalogservice URL in frontend so that trace errors start occuring",
             "type": "values"
         }
     ]

@@ -750,7 +750,7 @@ prometheus:
         - url: http://chronocollector:3030/remote/write
 
 grafana:
-  enabled: true
+  enabled: false
   grafana.ini:
     auth:
       disable_login_form: true

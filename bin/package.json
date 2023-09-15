@@ -1,0 +1,17 @@
+{
+	"name": "cnc_web_ui",
+	"version": "0.0.0",
+	"description": "Chronosphere University Labs Generator Command and Control Web UI",
+	"main": "cnc_web_ui.js",
+	"engines": {
+		"node": ">=18.17.0"
+	},
+	"author": "bill.fox@themonitoringshop.com",
+	"license": "ISC",
+	"dependencies": {
+		"hashmap": "2.4.x",
+		"properties-reader": "2.3.x",
+		"uuid": "9.x.x",
+		"log4js": "6.9.x"
+	}
+}
