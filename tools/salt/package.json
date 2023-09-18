@@ -1,0 +1,13 @@
+{
+	"name": "salt",
+	"version": "0.0.0",
+	"description": "Hash and Salt a given password",
+	"main": "salt.js",
+	"engines": {
+		"node": ">=18.17.0"
+	},
+	"author": "bill.fox@themonitoringshop.com",
+	"license": "ISC",
+	"dependencies": {
+	}
+}

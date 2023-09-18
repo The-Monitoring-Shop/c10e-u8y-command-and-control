@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+    <title>Chronosphere Labs Generator Command and Control - Login</title>
+
+    <link rel="stylesheet" href="/css/base.css"> 
+
+    <style>
+
+        body {
+
+            background-image: url("/images/flock-of-data-banner-01-1-1920x745.webp");
+            background-size: cover;
+            background-color: black;
+
+        }
+
+        .main_panel {
+                position:  absolute;
+                top:       20%;  
+                left:      10%; 
+                width:     400px;
+                height:    200px;
+                color: white;
+        }
+
+        .c10e_title {
+                position:  absolute;
+                top:       10%;  
+                left:      10%; 
+                width:     90%;
+                height:    100px;
+                color: white;
+
+                font-family: 'c10e-bold';
+                font-size: 50px;
+
+
+        }
+
+        .c10e_logo {
+                position:  absolute;
+                top:       85%;  
+                left:      75%; 
+                width:     25%;
+                height:    15%;
+                color: white;
+
+                font-family: 'c10e-regular';
+                font-size: 30px;
+                letter-spacing: 4px;
+        }
+
+        form
+        {
+            font-family: 'c10e-regular';
+            font-size: 20px;
+        }
+
+        input
+        {
+            font-family: 'c10e-regular';
+            font-size: 20px;
+        }
+
+        input[type=text] 
+        {
+            width: 300px;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border-radius: 5px;
+            background-color: black;
+            border-color: white;
+            color: white;
+        }
+
+        input[type=password] 
+        {
+            width: 300px;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border-radius: 5px;
+            background-color: black;
+            border-color: white;
+            color: white;
+        }
+
+        input[type=submit] 
+        {
+            width: 25%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border-radius: 5px;
+            background-color: #59cc8d;
+            border-color: black;
+            color: black;
+        }
+
+        .error_text {
+            color: red;
+            font-family: 'c10e-regular';
+            font-size: 15px;
+
+        }
+
+    </style>
+
+
+    
+</head>
+<body>
+
+    <div class='c10e_title'>
+
+        University Labs Generator - Command and Control
+
+    </div>
+
+    <div class='c10e_logo'>
+
+
+        <img src="/images/logo__chrono-black.png" style='height: 100%; width: 100%; object-fit: contain'/>
+
+
+    </div>
+
+
+    <div class="main_panel">
+
+    <form method="POST" action="/action_login">
+        <label for="user">Username:</label><br>
+        <input type="text" id="user" name="user"><br>
+        <label for="pass">Password:</label><br>
+        <input type="password" id="pass" name="pass">
+        <br>
+        <input type="submit" value="Log In">
+        <input type="hidden" name="redirect" value="{{redirect}}">
+    </form> 
+
+    <div class="error_text">
+
+        {{err_msg}}
+
+    </div>
+
+    </div>
+
+</body>
+</html>

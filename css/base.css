@@ -1,0 +1,22 @@
+@font-face {
+        font-family: 'c10e-bold';
+        font-style: normal;
+        font-weight: normal;
+        src: url(../fonts/Lato-Bold.ttf);
+}
+
+@font-face {
+        font-family: 'c10e-regular';
+        font-style: normal;
+        font-weight: normal;
+        src: url(../fonts/Lato-Regular.ttf);
+}
+
+body {
+        background-image: url("/images/flock-of-data-banner-01-1-1920x745.webp");
+        background-repeat: no-repeat;
+        width: 100%;
+        margin: 0px;
+        overflow: hidden; 
+        /*cursor: none;*/
+}
