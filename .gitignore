@@ -1,3 +1,4 @@
 bin/node_modules/
 logs/*
 tools/salt/node_modules/
+conf/users.json

@@ -106,6 +106,13 @@
 
         }
 
+        .success_text {
+            color: green;
+            font-family: 'c10e-regular';
+            font-size: 15px;
+
+        }
+
     </style>
 
 
@@ -137,12 +144,18 @@
         <input type="password" id="pass" name="pass">
         <br>
         <input type="submit" value="Log In">
-        <input type="hidden" name="redirect" value="{{redirect}}">
+        <input type="hidden" name="redirect" value="/html/home.html">
     </form> 
 
     <div class="error_text">
 
         {{err_msg}}
+
+    </div>
+
+    <div class="success_text">
+
+        {{msg}}
 
     </div>
 

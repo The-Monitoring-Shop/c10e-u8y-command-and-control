@@ -1,0 +1,6 @@
+{
+    "users":
+    [
+        {"user": "admin", "hash": "", "salt": "", "saltiness": ""}
+    ]
+}

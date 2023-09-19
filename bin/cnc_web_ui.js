@@ -32,6 +32,11 @@ console.log("");
 
 var os_platform = os.platform + ' ' + os.release ;
 
+var default_replacements = [
+    {search: "{{err_msg}}", replace: ""},
+    {search: "{{msg}}", replace: ""},
+];
+
 // ** Properties File **
 
 var config_file = "../conf/cnc_web_ui.properties";
@@ -53,6 +58,7 @@ var inactivity_timeout = config.get("inactivity_timeout");
 var anon_allow = config.get("anon_allow");
 var anon_rbac = config.get("anon_rbac");
 var static_allow_file = config.get("static_allow");
+var users_file = config.get("users");
 
 var log_location = config.get("log_location");
 var log_filename = config.get("log_filename");
@@ -69,6 +75,7 @@ var dev_mode = config.get("dev_mode");
 
 var log4js = require("log4js");
 const { exit } = require('process');
+const { timeStamp } = require('console');
 
 log4js.configure(
 {
@@ -100,10 +107,13 @@ logger.info("+-->tls_private_key = " + tls_private_key);
 logger.info("+-->inactivity_timeout = " + inactivity_timeout);
 logger.info("+-->anon_allow = " + anon_allow);
 logger.info("+-->anon_rbac = " + anon_rbac);
+logger.info("+-->dev_mode = " + dev_mode);
 
 
 var static_allow = {};
 var cases = {};
+
+// Load user case data
 
 logger.info("+-->cases = " + cases_file);
 
@@ -123,6 +133,8 @@ for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
 {
     logger.trace("   +-->" + cases.cases[inc_case].id + " - " + cases.cases[inc_case].name + " - " + cases.cases[inc_case].desc);
 }
+
+// Load Static Allow data
 
 logger.info("+-->static_allow = " + static_allow_file);
 
@@ -146,7 +158,15 @@ for(let inc_obj = 0; inc_obj < static_allow.objects.length; inc_obj ++)
     allow_obj.set(static_allow.objects[inc_obj].url, static_allow.objects[inc_obj].type);
 }
 
-logger.info("+-->dev_mode = " + dev_mode);
+// Load user info
+
+logger.info("+-->users = " + users_file);
+
+var users = new HashMap();
+
+load_users();
+
+
 
 
 var options = {};
@@ -172,7 +192,6 @@ else
 // NOTE: For simplicity, we'll just store the session IDs in memory for now. 
 //       In future versions, if we plan to run multiple instances of this service, we will have to have some sort of shared storage.
 var session_ids = new HashMap();    // Key on session ID, with user as value
-var user_session = new HashMap();   // Key on Username, with session ID as value
 var session_timestamp = new HashMap(); // key on session ID, with epoch timestamp of when session was created (used for session time out - TODO)
 
 // Javascript store
@@ -344,43 +363,39 @@ function load_tplib()
     dir.closeSync();
 }
 
+// ** load_users - (re)load user information from file into hashmaps 
+
+function load_users()
+{
+
+    let users_data = {};
+
+    try
+    {
+        users_data = JSON.parse(fs.readFileSync(users_file));
+    }
+    catch(e)
+    {
+        logger.fatal(e);
+        logger.fatal("Failed to read user information from config file " + users_file + ". We can't run without this, so exiting now.");
+        exit(1);
+    }
+
+    logger.trace("   |");
+    for(let inc_user = 0; inc_user < users_data.users.length; inc_user ++)
+    {
+        logger.trace("   +-->" + users_data.users[inc_user].user);
+        users.set(users_data.users[inc_user].user, users_data.users[inc_user]);
+    }
+}
+
 // ********************************************************************************************************************************************************
 // Server Actions
 // ********************************************************************************************************************************************************
 
-// serve_html - Serve static html
-/*
-async function serve_html(html, res, client_id, this_session_id)
-{
-
-    let chcksess = await check_session(client_id, this_session_id);
-    let session_valid = chcksess.vaild || false;
-    let this_user = chcksess.username || '';
-
-    if(!session_valid)
-    {
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.write('<html><body><p>Not Found</p></body></html>');
-        res.end();
-
-    }
-    else if(html == null)
-    {
-        res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.write('<html><body><p>Not Found</p></body></html>');
-        res.end();
-    }
-    else
-    {
-        res.writeHead(200, { 'Content-Type': 'text/html'});
-        res.end(html);
-    }
-}
-*/
-
 // serve_static - Serve a static object (such as html, css etc)
 
-async function serve_static(action, res, client_id, this_session_id)
+async function serve_static(action, res, client_id, this_session_id, replacements)
 {
 
     let chcksess = await check_session(client_id, this_session_id);
@@ -404,7 +419,7 @@ async function serve_static(action, res, client_id, this_session_id)
         }
         else if(action == "/html/home.html")
         {
-            action = "/html/login/html";
+            action = "/html/login.html";
             ok_2_serve = true;
         }
         else
@@ -418,6 +433,7 @@ async function serve_static(action, res, client_id, this_session_id)
     else
     {
         ok_2_serve = true;  // We have a valid session, so it's OK to serve the requested object
+
     }
 
     if(ok_2_serve) 
@@ -440,12 +456,20 @@ async function serve_static(action, res, client_id, this_session_id)
             }
             else
             {
+                // Perform any dynamic text replacement
+
+                for(let inc_rep = 0; inc_rep < replacements.length; inc_rep ++)
+                {
+                    html = replaceAll(html, replacements[inc_rep].search, replacements[inc_rep].replace);
+                }
+
+                // Now write the html back to the client
+
                 res.writeHead(200, { 'Content-Type': 'text/html'});
                 res.end(html);
             }
         }
-
-        if (action.startsWith('/images/'))
+        else if (action.startsWith('/images/'))
         {     
             // ** Serve any static images **
 
@@ -544,6 +568,12 @@ async function serve_static(action, res, client_id, this_session_id)
                 res.end(tplib);
             }
         }
+        else
+        {
+            res.writeHead(404, { 'Content-Type': 'text/html' });
+            res.write('<html><body><p>Not Found</p></body></html>');
+            res.end();
+        }
     }
 
 }
@@ -555,6 +585,11 @@ async function serve_static(action, res, client_id, this_session_id)
 function escapeRegExp(str) 
 {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(str, find, replace) 
+{
+    return(str.replace(new RegExp(escapeRegExp(find), 'g'), replace));
 }
 
 
@@ -587,69 +622,41 @@ async function check_session(client_id, session_id)
     return new Promise(async function(resolve) 
     {
 
-        // TODO: For now, just return true
-
-        resolve({vaild: true, username: "guest"});
-
-        /*
-
         logger.debug(client_id + ' - Checking session id of ' + session_id + ' is valid...');
 
         let session_valid = false;
         let the_user = 'guest';
+        let the_timestamp = 0;
 
-        let check_session_json = {   auth: couchbase_api.auth, 
-                                bucket: "tmsd-session",
-                                key: session_id,
-                                expire: inactivity_timeout
-                            };
-
-        let couchbase_check_session = await call_couchbase_dh('/getbykey', check_session_json );
-
-        if(couchbase_check_session.hasOwnProperty('error'))
+        if(session_ids.has(session_id))
         {
-            if(couchbase_check_session.error == 'Error: document not found')
-            {
+            the_user = session_ids.get(session_id);
 
-                logger.debug(client_id + ' - Session ID ' + session_id + ' is NOT valid! Rejecting client request.' );
+            the_timestamp = session_timestamp.get(session_id);
 
-            }
-            else
-            {
-                logger.error(client_id + ' - Unable to verify if Session ID ' + session_id + ' is valid: ' + couchbase_check_session.error);
-            }
-        }
-        else if(couchbase_check_session.hasOwnProperty('username'))
-        {
-            let client_info = couchbase_check_session.client_info || 'unknown';
+            let now = new Date();
+            let time_diff = now - the_timestamp;
 
-            if(client_info == client_id)
+            if(time_diff < inactivity_timeout)
             {
-                logger.debug(client_id + ' - Session ID ' + session_id + ' is valid for user "' + couchbase_check_session.username + '"');
                 session_valid = true;
-                the_user = couchbase_check_session.username;
-
+                logger.debug(client_id + ' - Session ID ' + session_id + ' is valid for user "' + the_user + '"');
+                session_timestamp.set(session_id, now);
             }
             else
             {
-                logger.debug(client_id + ' - Session ID ' + session_id + ' is NOT valid! The client ID does not match the client info we have on record. Rejecting client request.' );
-
+                logger.debug(client_id + ' - Session ID ' + session_id + ' has timed out for "' + the_user + '"');
             }
-
         }
         else
         {
-            logger.error(client_id + ' - Unable to verify if Session ID ' + session_id + ' is valid. Malformed Response from Data Handler: ' + couchbase_check_session);
-
+            logger.debug(client_id + ' - Session ID ' + session_id + ' is not valid for "' + the_user + '"');
         }
-
 
         let result = {vaild: session_valid, username: the_user};
 
         resolve(result);
 
-        */
-
     }).catch((error) => 
     {
         logger.error(error);
@@ -657,96 +664,6 @@ async function check_session(client_id, session_id)
 
 
 }
-
-
-// ** action_on_invalid_session - Decided what to do with an invalid session. 
-//      - If anon_allow is false, present the user with a login screen.
-//      - If anon_allow is true, create a guest session
-/* 
-async function action_on_invalid_session(res, client_id, action, err_msg)
-{
-    return new Promise(async function(resolve) 
-    {
-        // TODO - For now, action is always 'login_guest'
-
-        resolve('login_guest');
-
-
-
-        if(reload_on_refresh)
-        {
-            reload();
-        }
-
-        if(anon_allow)
-        {
-
-            // Anonymous access is allowed - let's create a 'guest' session.
-
-            let session_id = uuidv4(); 
-            let login_user = "guest";
-
-            let cre_sess = {
-
-                auth: couchbase_api.auth, 
-                bucket: "tmsd-session", 
-                key: session_id,
-                expire: inactivity_timeout,
-                doc: {
-                    username: login_user,
-                    client_info: client_id
-                }
-
-            }
-
-            let cre_sess_result = await call_couchbase_dh('/upsertbykey', cre_sess);
-
-            if(cre_sess_result.hasOwnProperty('error'))
-            {
-                logger.error(client_id + ' - User "' + login_user + '. Failed to generate session id record ' + session_id + ' in data store! Error is: ' + error);
-
-                res.writeHead(500, { 'Content-Type': 'text/html' });
-                res.write('<html><body><p>Error:</p>' + error + '</body></html>');
-                res.end();
-                
-            }
-            else
-            {
-                logger.info(client_id + ' - User "' + login_user + '" logged in successfully. Assigned Session ID: ' + session_id);
-
-                let headers = {
-                        'Content-Type': 'text/html',
-                        'Set-Cookie': 'sessionId=' + session_id + '; SameSite=Strict' };
-                
-                let this_redirect = replaceAll(redirect_page, '{{redirect}}', action);
-                res.writeHead(200, headers);   
-                res.end(this_redirect);
-            }
-
-            resolve('login_guest');
-        }
-        else
-        {
-            // Anonymous access is not allowed - Show the user a login page
-
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(login_page.replace('{{redirect}}', action).replace('{{err_msg}}', err_msg));
-
-            resolve('login_required');
-        }
-
-
-    }).catch((error) => 
-    {
-        logger.error(error);
-        res.writeHead(500, { 'Content-Type': 'text/html' });
-        res.write('<html><body><p>Error:</p>' + error + '</body></html>');
-        res.end();
-    });
-
-}
-
-*/
 
 // ** action_login - Action a user's login
 
@@ -766,21 +683,9 @@ async function action_login(res, client_id, body)
 
         logger.debug(client_id + ' requested login as user ' + login_user);
 
-        /*
-
-        let get_user_request = {
-
-            auth: couchbase_api.auth, 
-            bucket: "tmsd-users", 
-            key: login_user
-
-        }
-        */
 
         let p_correct = false;
         let check_user_exists = false;
-
-        let check_user = 'false';
 
         if(login_pass == '' || login_user == '')
         {
@@ -789,103 +694,27 @@ async function action_login(res, client_id, body)
         }
         else
         {
-            check_user = await call_couchbase_dh('/existsbykey', get_user_request);
-
-            if(check_user.hasOwnProperty('error'))
-            {
-                let check_error = check_user.error;
-                logger.debug(client_id + ' - Unable to check if user "' + login_user + '" exists. Reason is: ' + check_error);
-                err_msg = 'There seems to be a technical issue. Please try again later.';
-            }
-            else
-            {
-                try
-                {
-                    check_user_exists = check_user.exists;
-                    if(check_user_exists == 'false')
-                    {
-                        logger.debug(client_id + ' - Unable to log user "' + login_user + '" in. Reason is: User Does Not Exist!');
-                        err_msg = 'Incorrect Username/Password combination. Please try again.';
-                    }
-                }
-                catch (error)
-                {
-                    logger.error(client_id + ' - Error checking if user "' + login_user + '" exist: ' + error);
-                    check_user_exists = false;
-                    err_msg = 'There seems to be a technical issue. Please try again later.';
-                }
-            }
+            check_user_exists = users.has(login_user);
         }
 
-        if(check_user_exists == 'true')
+        if(check_user_exists)
         {
 
-            let get_user = await call_couchbase_dh('/getbykey', get_user_request);
+            let get_user = users.get(login_user)
 
-            if(get_user.hasOwnProperty('error'))
+            p_correct = check_password(login_pass, get_user.salt, get_user.saltiness, get_user.hash);
+
+            if(!p_correct)
             {
-                let login_error = get_user.error;
-
-                err_msg = 'There seems to be a technical issue. Please try again later.';
-
-                if(login_error == "Error: document not found")
-                {
-                    login_error = 'User Does Not Exist!';
-                    err_msg = 'Incorrect Username/Password combination. Please try again.';
-                }
-
-                logger.debug(client_id + ' - Unable to log user "' + login_user + '" in. Reason is: ' + login_error);
+                logger.debug(client_id + ' - User "' + login_user + '" gave incorrect password.');
+                err_msg = 'Incorrect Username/Password combination. Please try again.';
             }
             else
             {
-                try
-                {
-                    p_correct = check_password(login_pass, get_user.salt, get_user.saltiness, get_user.password);
+                // Create Session
 
-                    if(!p_correct)
-                    {
-                        logger.debug(client_id + ' - User "' + login_user + '" gave incorrect password.');
-                        err_msg = 'Incorrect Username/Password combination. Please try again.';
-                    }
-                    else
-                    {
-                        // Create Session
-
-                        session_id = uuidv4();  
-
-                        let cre_sess = {
-
-                            auth: couchbase_api.auth, 
-                            bucket: "tmsd-session", 
-                            key: session_id,
-                            expire: inactivity_timeout,
-                            doc: {
-                                username: login_user,
-                                client_info: client_id
-                            }
-        
-                        }
-
-                        let cre_sess_result = await call_couchbase_dh('/upsertbykey', cre_sess);
-
-                        if(cre_sess_result.hasOwnProperty('error'))
-                        {
-                            logger.error(client_id + ' - User "' + login_user + '. Failed to generate session id record ' + session_id + ' in data store! Error is: ' + error);
-                            p_correct = false;
-                            err_msg = 'There seems to be a technical issue. Please try again later.';
-                        }
-                        else
-                        {
-                            logger.info(client_id + ' - User "' + login_user + '" logged in successfully. Assigned Session ID: ' + session_id);
-                        }
-                        
-                    }
-                }
-                catch (error)
-                {
-                    logger.error(client_id + ' - Password check for user "' + login_user + '" returned error: ' + error);
-                    err_msg = 'There seems to be a technical issue. Please try again later.';
-                }
+                session_id = create_session(login_user);
+                
             }
 
         }
@@ -899,7 +728,7 @@ async function action_login(res, client_id, body)
                 'Set-Cookie': 'sessionId=' + session_id + '; SameSite=Strict'
             }; 
 
-            let this_redirect = replaceAll(redirect_page, '{{redirect}}', redirect_path);
+            let this_redirect = replaceAll(html_store.get("redirect.html"), '{{redirect}}', redirect_path);
             res.writeHead(200, headers); 
             res.end(this_redirect);
     
@@ -907,7 +736,18 @@ async function action_login(res, client_id, body)
         else
         {
 
-           action_on_invalid_session(res, client_id, redirect_path, err_msg);
+            /*
+            let tryagain = replaceAll(html_store.get("login.html"), '{{err_msg}}', "Invaild Username and/or Password");
+            res.writeHead(401, headers); 
+            res.end(tryagain);
+            */
+
+           let replacements = [
+                {search: "{{err_msg}}", replace: "Invaild Username and/or Password"},
+                {search: "{{msg}}", replace: ""},
+            ];
+        
+            serve_static("/html/login.html", res, client_id, session_id, replacements);
         }
 
 
@@ -923,46 +763,40 @@ async function action_login(res, client_id, body)
     });
 }
 
+// create_session - Create user session
+
+function create_session(login_user)
+{
+        // Create Session
+
+        let session_id = uuidv4();  
+        let timestamp = new Date();
+
+        session_ids.set(session_id,login_user);    // Key on session ID, with user as value
+        session_timestamp.set(session_id,timestamp); // key on session ID, with epoch timestamp of when session was created
+
+        return(session_id)
+}
+
 // action_logout - Action a user logout request
 
 async function action_logout(res, action, client_id, this_session_id)
 {
+
     return new Promise(async function(resolve) 
     {
 
-        let kill_sess_result = '{}';
+        let kill_sess_result = true;
 
-        /*
-        let session_valid = false;
+        session_ids.delete(this_session_id);
+        session_timestamp.delete(this_session_id);
 
-        let chcksess = await check_session(client_id, this_session_id);
-        session_valid = chcksess.vaild || false;
-        let user2logout = chcksess.username || '';
-
-        // If user not a guest user, delete the session from the data store
-
-        if(!anon_allow && user2logout != 'guest')
-        {
-
-            let kill_sess = {
-
-                auth: couchbase_api.auth, 
-                bucket: "tmsd-session", 
-                key: this_session_id
-            }
-
-            kill_sess_result = await call_couchbase_dh('/removebykey', kill_sess);
-
-            logger.info(client_id + ' - User "' + user2logout + '" logged out successfully. Session ID: ' + this_session_id + ' removed from data store.');
-        }
-
-
-
-        // Now call 'action_on_invalid_session' - If not a guest user, this should fail through to the login page.
-
-        action_on_invalid_session(res, client_id, '/', ''); 
-        
-        */
+        let replacements = [
+            {search: "{{err_msg}}", replace: ""},
+            {search: "{{msg}}", replace: "Logout Successful"},
+        ];
+      
+        serve_static("/html/login.html", res, client_id, this_session_id, replacements);
 
         resolve(kill_sess_result);
         
@@ -975,82 +809,6 @@ async function action_logout(res, action, client_id, this_session_id)
     });
 
 }
-
-// ** serve_home - Serve Home Page, or redirect to login page if applicable
-/*
-async function serve_home(res, action, client_id, this_session_id)
-{
-    return new Promise(async function(resolve) 
-    {
-        
-
-        if(reload_on_refresh)
-        {
-            reload();
-        }
-
-        let session_valid = false;
-
-        let chcksess = await check_session(client_id, this_session_id);
-        session_valid = chcksess.vaild || false;
-        let home_user = chcksess.username || '';
-
-        if(!session_valid)
-        {
-            // Not a valid session, so we'll either present user with login page, or create a session if anon_allow is true.
-
-           action_on_invalid_session(res, client_id, action, '');
-
-        }
-        else
-        {
-            // Display the home page
-
-            logger.debug(client_id + ' being served the home page.');
-
-            let dash_list = '';
-
-            dashboard_store.forEach(function(dash, dash_name) 
-            {
-                let link = '<a href="/tmsd/' + dash_name + '"><img src="/tmsd/' + dash_name + '/images/menu-icon.png" style="width:100px;height:100px;"></a>';
-                dash_list = dash_list + '<tr><td>' + link + '</td><td>' + dash_name + '</td></tr>';
-            });
-
-            let home_page_built = replaceAll(home_page.replace('{{dash_list}}', dash_list), '{{username}}', home_user);
-
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(home_page_built);
-        }
-
-        
-
-        let html = html_store.get("home.html");
-
-        if(html == null)
-        {
-            res.writeHead(404, { 'Content-Type': 'text/html' });
-            res.write('<html><body><p>Not Found</p></body></html>');
-            res.end();
-        }
-        else
-        {
- 		    res.writeHead(200, { 'Content-Type': 'text/html'});
-            res.end(html);
-        }
-
-        resolve(true);
-
-
-    }).catch((error) => 
-    {
-        logger.error(error);
-        res.writeHead(500, { 'Content-Type': 'text/html' });
-        res.write('<html><body><p>Error:</p>' + error + '</body></html>');
-        res.end();
-    });
-}
-
-*/
 
 // ********************************************************************************************************************************************************
 // The Main Server
@@ -1079,11 +837,10 @@ protocol.createServer(options, function (req, res)
 
     let client_id = client + '@' + origin;
 
-    // TODO - Get session cookie if it exists
+    // Get session cookie if it exists
 
     let this_session_id = '0';
 
-    /*
 
     let this_session_cookie = req.headers['cookie'];
    
@@ -1105,14 +862,13 @@ protocol.createServer(options, function (req, res)
 
         }
 
+        logger.debug('Client ' + client_id + ' has a session cookie with a session ID of ' + this_session_id);
+
     }
     else
     {
         logger.debug('Client ' + client_id + ' has no session cookie.');
     }
-
-    */
-    
 
 	if (req.method == 'POST') 
 	{
@@ -1138,22 +894,34 @@ protocol.createServer(options, function (req, res)
 
             let chcksess = await check_session(client_id, this_session_id);
             session_valid = chcksess.vaild || false;
-            let this_user = chcksess.username || '';
+            let this_user = chcksess.username || 'guest';
 
-            if(!session_valid && action != '/action_login' )
+            if(anon_allow && !session_valid)    
             {
-                // Not a valid session, so we'll either present user with login page, or create a session if allow_anon set
-                //action_on_invalid_session(res, client_id, action, ''); 
+                // If we don't have a vaild session, but anon_allow is true, create a new session, cookie etc, and re-diect the user back to their requested page
 
+                this_session_id = create_session(this_user);
+
+                let headers = {
+                    'Content-Type': 'text/html',
+                    'Set-Cookie': 'sessionId=' + this_session_id + '; SameSite=Strict'
+                }; 
+    
+                let this_redirect = replaceAll(html_store.get("redirect.html"), '{{redirect}}', action);
+                res.writeHead(200, headers); 
+                res.end(this_redirect);
+            }
+            else if(!session_valid && action != '/action_login' )
+            {
                 // We don't have a valid session, so attempt to serve whatever the requested url is as a static object.
                 // If this object does not exist, or is not in the static_allow list, then the client will either be given a 404, or re-directed to the Login page.
 
-                serve_static(action, res, client_id, this_session_id);
+                serve_static(action, res, client_id, this_session_id, default_replacements);
 
             }
             else if (action == '/action_login')
             {
-                // Action Login API was called (usually by the login page)
+                // Action Login
 
                 action_login(res, client_id, body); 
             }
@@ -1177,31 +945,15 @@ protocol.createServer(options, function (req, res)
         });
 
     }
-	else if (action == '/' || action == '/home' || action == '/index.html' || action == '/home.html' ) 
+	else if (action == '/' || action == '/home' || action == '/index.html' || action == '/home.html' || action == '/html/home.html' ) 
     { 
         // ** Serve the 'Home' page. This could be redirected to login if session not valid **
 
-        //serve_home(res, action, client_id, this_session_id);
-        serve_static("/html/home.html", res, client_id, this_session_id);
+        serve_static("/html/home.html", res, client_id, this_session_id, default_replacements);
+
     
     }
-    /*
-    else if (action == '/login') 
-    { 
-        // ** TODO - Direct Access to the Login Page will not normally be allowed. Clients will see it if they send a request to any page when they don't have a valid session id
-        //           However, for testing, there's a direct link here.
-
-        if(reload_on_refresh)
-        {
-            reload();
-        }
-
- 		res.writeHead(200, { 'Content-Type': 'text/html' });
-		res.end(login_page);
-    
-    }
-    */
-    else if (action == '/logout') 
+    else if (action == '/action_logout') 
     { 
         // ** Log User Out (i.e. destroy session) **
         
@@ -1211,124 +963,9 @@ protocol.createServer(options, function (req, res)
     else
     {
         // ** Serve any static object (if permissions allow) **
-      
-        serve_static(action, res, client_id, this_session_id);
+
+        serve_static(action, res, client_id, this_session_id, default_replacements );
     }
-    /*
-    else if (action == '/base.css')
-    {    
-        // ** Serve the base Style Sheet **
-        
- 		res.writeHead(200, { 'Content-Type': 'text/css' });
-        res.end(base_css);
-    }
-    else if (action.startsWith('/images/'))
-    {     
-        // ** Serve any static images **
-        
-        let image_name = action.slice(8);
-        let image = image_store.get(image_name);
-
-        if(image == null)
-        {
-            image = fnf_image;
-            image_name = fnf_image_name;
-        }
-        let mime_type = image_name.slice(image_name.lastIndexOf('.') + 1);
-
- 		res.writeHead(200, { 'Content-Type': 'image/' + mime_type });
-        res.end(image);
-    }
-    else if (action.startsWith('/fonts/'))
-    {     
-        // ** Serve and fonts **
-        
-        let font_name = action.slice(7);
-        let font = font_store.get(font_name);
-
-        if(font == null)
-        {
-            res.writeHead(404, { 'Content-Type': 'text/html' });
-            res.write('<html><body><p>Not Found</p></body></html>');
-            res.end();
-        }
-        let mime_type = 'x-font-ttf';
-
- 		res.writeHead(200, { 'Content-Type': 'application/' + mime_type });
-        res.end(font);
-    }
-    else if (action.startsWith('/html/'))
-    {     
-        // ** Serve any static html **
-        
-        let html_name = action.slice(6);
-        let html = html_store.get(html_name);
-
-        serve_html(html, res, client_id, this_session_id);
-    }
-    else if (action.startsWith('/css/'))
-    {     
-        // ** Serve any static css **
-        
-        let css_name = action.slice(5);
-        let css = css_store.get(css_name);
-
-        if(css == null)
-        {
-            res.writeHead(404, { 'Content-Type': 'text/css' });
-            res.end();
-        }
-        else
-        {
- 		    res.writeHead(200, { 'Content-Type': 'text/css'});
-            res.end(css);
-        }
-    }
-    else if (action.startsWith('/lib/'))
-    {     
-        // ** Serve any Internal JS **
-        
-        let lib_name = action.slice(5);
-        let lib = lib_store.get(lib_name);
-
-        if(lib == null)
-        {
-            res.writeHead(404, { 'Content-Type': 'text/javascript' });
-            res.end();
-        }
-        else
-        {
- 		    res.writeHead(200, { 'Content-Type': 'text/javascript'});
-            res.end(tplib);
-        }
-    }
-    else if (action.startsWith('/tplib/'))
-    {     
-        // ** Serve any Third Pary JS **
-        
-        let tplib_name = action.slice(7);
-        let tplib = tplib_store.get(tplib_name);
-
-        if(tplib == null)
-        {
-            res.writeHead(404, { 'Content-Type': 'text/javascript' });
-            res.end();
-        }
-        else
-        {
- 		    res.writeHead(200, { 'Content-Type': 'text/javascript'});
-            res.end(tplib);
-        }
-    }
-    else
-	{
-        // ** Serve a 'Not Found' **
-
-		res.writeHead(404, { 'Content-Type': 'text/html' });
-		res.write('<html><body><p>Not Found</p></body></html>');
-		res.end();
-	}
-    */
 
 }).listen(listen_port);
 
@@ -1344,4 +981,5 @@ logger.info("cnc_web_ui Running on " + listen_address + ":" + listen_port);
 process.on('uncaughtException', function (err) 
 {
     logger.fatal('UNCAUGHT EXCEPTION: ' + err);
-}); 
+});
+

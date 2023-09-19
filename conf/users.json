@@ -1,6 +1,6 @@
 {
     "users":
     [
-        {"user": "admin", "cred": ""}
+        {"user": "admin", "hash": "gmEL7caq8rmt4hsQqagH3rr1+LnQaQr8CqDtC+3GvtZyfFG78qWqg9sECuZa5IRcB9tWG+Evm8SCTjRfH7zHTm7KKiH106s5Ltx19YqR1vebk82t/ZXZlcJS01DEw6omi5yLJS8N5fP/rITWlxX8MRmkPdITVJ5KKb63DhwieUxVA0EEPhTTgERFxzYRMu/SbraOUpCRrVW9IWpEeEKzQ79+G4mECCl52nQQuGikNJT1WbqYtgl3atoev8noZISZzPec3GOVZCfHG2x2NebWI2etz7uw937a5uMT9YAzi0t/6ZTVtxw9EZJhcZ50CjeKiObq9uUxAuCPtL/1eyL0rDQXkRmo8Y/fI7fiii51TySlN/tzuTlw1+UoDCNxvFiANC6++z5TPsPzTX+6G2Wb7wA+LIJV/0QJsedtFs9OkQNpqqPKkgfwJ9pn2LgKsHN8e6U0AtbK9Wfyuak2JTrgvDG+mj73WGsCf+8ZC3zLz6HCIrjzBQamuneuJbWY3oqSxPi3SNAms11/hMH2d6n2r+pgw2Jcy1HXQNIZFrjEB97upAKbn6kMB0qGzK6FZJuS8x6n8I4kntVXbSgiL66vNVehOHCKRvj7U7Lv8GAnJOs/38gLlz5hhmOOT9E/YDuvs+eoSlDyWQPwGpKFeFpl+RMuqiEMv/weZU5mDDTjG24=", "salt": "ATLGk25lXrAfyE793iPF6tK5UBBvr7WJifB58w29T/hZKFG2i2/GC9CR9iYVucz4rALmYnNenKX+Drkmnm251StjT8PsSFJcJmwrzMJSYJizQAs5d8a0d21reGRmnECZ8f3Kwr3VQI3uQ3yDshJnACJzlyIL5tFEV27QlR2eEds=", "saltiness": 10000}
     ]
 }
