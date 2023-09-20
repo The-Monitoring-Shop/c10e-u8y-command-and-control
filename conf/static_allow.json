@@ -2,10 +2,12 @@
     "objects":
     [
         {"url": "/html/login.html", "type": "html"},
-        {"url": "/fonts/Lato-Bold.otf", "type": "font"},
-        {"url": "/fonts/Lato-Regular.otf", "type": "font"},
+        {"url": "/css/base.css", "type": "css"},
+        {"url": "/fonts/Lato-Bold.ttf", "type": "font"},
+        {"url": "/fonts/Lato-Regular.ttf", "type": "font"},
         {"url": "/images/flock-of-data-banner-01-1-1920x745.webp", "type": "image"},
         {"url": "/images/logo__chrono-black.png", "type": "image"},
-        {"url": "/images/logo__chrono-black.svg", "type": "image"}
+        {"url": "/images/logo__chrono-black.svg", "type": "image"},
+        {"url": "/images/favicon.ico", "type": "image"}
     ]
 }

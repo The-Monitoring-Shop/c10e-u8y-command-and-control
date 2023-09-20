@@ -27,10 +27,13 @@ var calling_http = require('http');
 var calling_https = require('https');
 var os = require('os');
 
+var exec = require('child_process').exec;
+
+
 console.log("** cnc_web_ui **");
 console.log("");
 
-var os_platform = os.platform + ' ' + os.release ;
+//var os_platform = os.platform + ' ' + os.release ;
 
 var default_replacements = [
     {search: "{{err_msg}}", replace: ""},
@@ -166,8 +169,7 @@ var users = new HashMap();
 
 load_users();
 
-
-
+// Set up server protocol
 
 var options = {};
 
@@ -402,180 +404,257 @@ async function serve_static(action, res, client_id, this_session_id, replacement
     let session_valid = chcksess.vaild || false;
     let this_user = chcksess.username || '';
 
-    //let segments = action.split('/');
-    let ok_2_serve = false;
-
-    if(!session_valid)
+    if(anon_allow && !session_valid)    
     {
-        // We don't have a valid session. 
-        //  If the request is in the static allow list, serve it.
-        //  If the request is something sensible (such as /, index.html etc), serve the login page
-        //  Else, serve them a 404.
+        // If we don't have a vaild session, but anon_allow is true, so create a new session, cookie etc, and re-diect the user back to their requested page
 
+        this_session_id = create_session(this_user);
 
-        if(allow_obj.has(action))
-        {
-            ok_2_serve = true;
-        }
-        else if(action == "/html/home.html")
-        {
-            action = "/html/login.html";
-            ok_2_serve = true;
-        }
-        else
-        {
-            res.writeHead(404, { 'Content-Type': 'text/html' });
-            res.write('<html><body><p>Not Found</p></body></html>');
-            res.end();
-        }
+        let headers = {
+            'Content-Type': 'text/html',
+            'Set-Cookie': 'sessionId=' + this_session_id + '; SameSite=Strict'
+        }; 
 
+        let this_redirect = replaceAll(html_store.get("redirect.html"), '{{redirect}}', action);
+        res.writeHead(200, headers); 
+        res.end(this_redirect);
     }
     else
     {
-        ok_2_serve = true;  // We have a valid session, so it's OK to serve the requested object
 
-    }
+        let ok_2_serve = false;
 
-    if(ok_2_serve) 
-    {
+        if(!session_valid)
+        {
+            // We don't have a valid session. 
+            //  If the request is in the static allow list, serve it.
+            //  If the request is something sensible (such as /, index.html etc), serve the login page
+            //  Else, serve them a 404.
 
-        if (action.startsWith('/html/'))
-        {     
-            // ** Serve any static html **
-
-            if(dev_mode) load_html();
-            
-            let html_name = action.slice(6);
-            let html = html_store.get(html_name);
-
-            if(html == null)
+            if(allow_obj.has(action))
+            {
+                ok_2_serve = true;
+            }
+            else if(action == "/html/home.html")
+            {
+                action = "/html/login.html";
+                ok_2_serve = true;
+            }
+            else
             {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
                 res.write('<html><body><p>Not Found</p></body></html>');
                 res.end();
             }
-            else
-            {
-                // Perform any dynamic text replacement
 
-                for(let inc_rep = 0; inc_rep < replacements.length; inc_rep ++)
-                {
-                    html = replaceAll(html, replacements[inc_rep].search, replacements[inc_rep].replace);
-                }
-
-                // Now write the html back to the client
-
-                res.writeHead(200, { 'Content-Type': 'text/html'});
-                res.end(html);
-            }
-        }
-        else if (action.startsWith('/images/'))
-        {     
-            // ** Serve any static images **
-
-            if(dev_mode) load_images();
-            
-            let image_name = action.slice(8);
-            let image = image_store.get(image_name);
-
-            if(image == null)
-            {
-                image = fnf_image;
-                image_name = fnf_image_name;
-            }
-            let mime_type = image_name.slice(image_name.lastIndexOf('.') + 1);
-
-            res.writeHead(200, { 'Content-Type': 'image/' + mime_type });
-            res.end(image);
-        }
-        else if (action.startsWith('/fonts/'))
-        {     
-            // ** Serve and fonts **
-
-            if(dev_mode) load_fonts();
-            
-            let font_name = action.slice(7);
-            let font = font_store.get(font_name);
-
-            if(font == null)
-            {
-                res.writeHead(404, { 'Content-Type': 'text/html' });
-                res.write('<html><body><p>Not Found</p></body></html>');
-                res.end();
-            }
-            let mime_type = 'x-font-ttf';
-
-            res.writeHead(200, { 'Content-Type': 'application/' + mime_type });
-            res.end(font);
-        }
-        else if (action.startsWith('/css/'))
-        {     
-            // ** Serve any static css **
-
-            if(dev_mode) load_css();
-            
-            let css_name = action.slice(5);
-            let css = css_store.get(css_name);
-
-            if(css == null)
-            {
-                res.writeHead(404, { 'Content-Type': 'text/css' });
-                res.end();
-            }
-            else
-            {
-                res.writeHead(200, { 'Content-Type': 'text/css'});
-                res.end(css);
-            }
-        }
-        else if (action.startsWith('/lib/'))
-        {     
-            // ** Serve any Internal JS **
-
-            if(dev_mode) load_lib();
-            
-            let lib_name = action.slice(5);
-            let lib = lib_store.get(lib_name);
-
-            if(lib == null)
-            {
-                res.writeHead(404, { 'Content-Type': 'text/javascript' });
-                res.end();
-            }
-            else
-            {
-                res.writeHead(200, { 'Content-Type': 'text/javascript'});
-                res.end(tplib);
-            }
-        }
-        else if (action.startsWith('/tplib/'))
-        {     
-            // ** Serve any Third Pary JS **
-
-            if(dev_mode) load_tplib();
-            
-            let tplib_name = action.slice(7);
-            let tplib = tplib_store.get(tplib_name);
-
-            if(tplib == null)
-            {
-                res.writeHead(404, { 'Content-Type': 'text/javascript' });
-                res.end();
-            }
-            else
-            {
-                res.writeHead(200, { 'Content-Type': 'text/javascript'});
-                res.end(tplib);
-            }
         }
         else
         {
-            res.writeHead(404, { 'Content-Type': 'text/html' });
-            res.write('<html><body><p>Not Found</p></body></html>');
-            res.end();
+            ok_2_serve = true;  // We have a valid session, so it's OK to serve the requested object
+
+        }
+
+        if(ok_2_serve) 
+        {
+
+            if (action.startsWith('/html/'))
+            {     
+                // ** Serve any static html **
+
+                if(dev_mode) load_html();
+                
+                let html_name = action.slice(6);
+                let html = html_store.get(html_name);
+
+                if(html == null)
+                {
+                    res.writeHead(404, { 'Content-Type': 'text/html' });
+                    res.write('<html><body><p>Not Found</p></body></html>');
+                    res.end();
+                }
+                else
+                {
+                    // Perform any dynamic text replacement
+
+                    for(let inc_rep = 0; inc_rep < replacements.length; inc_rep ++)
+                    {
+                        html = replaceAll(html, replacements[inc_rep].search, replacements[inc_rep].replace);
+                    }
+
+                    // Now write the html back to the client
+
+                    res.writeHead(200, { 'Content-Type': 'text/html'});
+                    res.end(html);
+                }
+            }
+            else if (action.startsWith('/images/'))
+            {     
+                // ** Serve any static images **
+
+                if(dev_mode) load_images();
+                
+                let image_name = action.slice(8);
+                let image = image_store.get(image_name);
+
+                if(image == null)
+                {
+                    image = fnf_image;
+                    image_name = fnf_image_name;
+                }
+                let mime_type = image_name.slice(image_name.lastIndexOf('.') + 1);
+
+                res.writeHead(200, { 'Content-Type': 'image/' + mime_type });
+                res.end(image);
+            }
+            else if (action.startsWith('/fonts/'))
+            {     
+                // ** Serve and fonts **
+
+                if(dev_mode) load_fonts();
+                
+                let font_name = action.slice(7);
+                let font = font_store.get(font_name);
+
+                if(font == null)
+                {
+                    res.writeHead(404, { 'Content-Type': 'text/html' });
+                    res.write('<html><body><p>Not Found</p></body></html>');
+                    res.end();
+                }
+                let mime_type = 'x-font-ttf';
+
+                res.writeHead(200, { 'Content-Type': 'application/' + mime_type });
+                res.end(font);
+            }
+            else if (action.startsWith('/css/'))
+            {     
+                // ** Serve any static css **
+
+                if(dev_mode) load_css();
+                
+                let css_name = action.slice(5);
+                let css = css_store.get(css_name);
+
+                if(css == null)
+                {
+                    res.writeHead(404, { 'Content-Type': 'text/css' });
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(200, { 'Content-Type': 'text/css'});
+                    res.end(css);
+                }
+            }
+            else if (action.startsWith('/lib/'))
+            {     
+                // ** Serve any Internal JS **
+
+                if(dev_mode) load_lib();
+                
+                let lib_name = action.slice(5);
+                let lib = lib_store.get(lib_name);
+
+                if(lib == null)
+                {
+                    res.writeHead(404, { 'Content-Type': 'text/javascript' });
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(200, { 'Content-Type': 'text/javascript'});
+                    res.end(tplib);
+                }
+            }
+            else if (action.startsWith('/tplib/'))
+            {     
+                // ** Serve any Third Pary JS **
+
+                if(dev_mode) load_tplib();
+                
+                let tplib_name = action.slice(7);
+                let tplib = tplib_store.get(tplib_name);
+
+                if(tplib == null)
+                {
+                    res.writeHead(404, { 'Content-Type': 'text/javascript' });
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(200, { 'Content-Type': 'text/javascript'});
+                    res.end(tplib);
+                }
+            }
+            else
+            {
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                res.write('<html><body><p>Not Found</p></body></html>');
+                res.end();
+            }
         }
     }
 
+}
+
+// action_api - Action a requested API
+
+async function action_api(api_name, res, client_id, body)
+{
+    let json_loaded = {success: false, msg: "Unidentified Error?"};
+    let itsascript = false;
+    let script = "";
+    let script_result = {
+        success: false,
+        code: 1,
+        msg: "Unidentified Error?",
+        stdout: "",
+        stderr: ""
+    };
+    let resp_code = 200;
+
+    logger.debug("Client " + client_id + " requested API " + api_name);
+
+    if(api_name == 'check_k8s')
+    {
+        script = "kubectl cluster-info";
+        itsascript = true;
+    }
+    else if(api_name == 'check_labs_gen')
+    {
+        script = "../status.sh";
+        itsascript = true;
+    }
+    else
+    {
+        json_loaded = {success: false, msg: "Unknown API."};
+        resp_code = 404;
+        logger.debug("Rejecting client " + client_id + " request for api " + api_name + " as this api does not exist.");
+    }
+
+    if(itsascript)
+    {
+        // The requested API needs to call a script. Let's do that:
+
+        script_result = await run_script(script);
+
+        json_loaded.success = script_result.success;
+        json_loaded.msg = script_result.msg;
+
+        if(!script_result.success)
+        {
+            logger.debug('Run of script "' + script + '" returned a non-success code: ' + JSON.stringify(script_result));
+        }
+        else
+        {
+            logger.debug('Run of script "' + script + '" returned a success code: ' + JSON.stringify(script_result));
+        }
+    }
+
+    logger.debug('Sending response to client "' + client_id + '"');
+    res.writeHead(resp_code, { 'Content-Type': 'application/json' });
+    res.write(JSON.stringify(json_loaded));
+    res.end();
 }
 
 // ********************************************************************************************************************************************************
@@ -591,6 +670,73 @@ function replaceAll(str, find, replace)
 {
     return(str.replace(new RegExp(escapeRegExp(find), 'g'), replace));
 }
+
+// run_script - Run Script
+
+async function run_script(cmd2start)
+{
+
+    return new Promise(async function(resolve) 
+    {
+
+        let string_loaded = "";
+        let string_errors = "";
+
+
+        let script = exec(cmd2start);
+
+        script.stdout.on('data', function(data)
+        {
+            string_loaded += data.toString();
+        });
+        
+        script.stderr.on('data', function(data)
+        {
+            string_errors += data.toString();
+        });
+
+        script.on('exit', function(code)
+        {
+
+            /*
+            console.log("STDOUT:" + string_loaded);
+            console.log("STDERR:" + string_errors);
+            console.log(code);
+            */
+
+            let success = false;
+            let msg = "";
+            let stdout = string_loaded;
+            let stderr = string_errors;
+
+            if(code == 0)
+            {
+                success = true;
+                msg = stdout;
+            }
+            else
+            {
+                msg = stderr;
+            }
+
+            let result = {
+                success: success,
+                code: code,
+                msg: msg,
+                stdout: stdout,
+                stderr: stderr
+            }
+            resolve(result);
+
+        });
+    }).catch((error) => 
+    {
+        logger.error(error);
+    });
+
+}
+
+
 
 
 // ********************************************************************************************************************************************************
@@ -796,7 +942,14 @@ async function action_logout(res, action, client_id, this_session_id)
             {search: "{{msg}}", replace: "Logout Successful"},
         ];
       
-        serve_static("/html/login.html", res, client_id, this_session_id, replacements);
+        if(anon_allow)
+        {
+            serve_static("/html/home.html", res, client_id, this_session_id, default_replacements);
+        }
+        else
+        {
+            serve_static("/html/login.html", res, client_id, this_session_id, replacements);
+        }
 
         resolve(kill_sess_result);
         
@@ -888,7 +1041,7 @@ protocol.createServer(options, function (req, res)
     	});
 		req.on('end', async () => 
 		{
-            // Check we had a valid session.
+            // Check we have a valid session.
 
             let session_valid = false;
 
@@ -925,16 +1078,12 @@ protocol.createServer(options, function (req, res)
 
                 action_login(res, client_id, body); 
             }
-            /*
-            else if (action == '/api')              
+            
+            else if (action.startsWith('/api/'))              
             {
-                action_api(res, client_id, body);
+                let api_name = action.slice(5);
+                action_api(api_name, res, client_id, body);
             }
-            else if (action == '/tmsd/api')
-            {
-                action_api(res, client_id, body);  
-            }
-            */
             else
             {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
@@ -959,6 +1108,12 @@ protocol.createServer(options, function (req, res)
         
         action_logout(res, action, client_id, this_session_id);
 
+    }
+    else if (action == '/favicon.ico')
+    {
+        // ** Serve the favicon
+
+        serve_static('/images/favicon.ico', res, client_id, this_session_id, default_replacements );
     }
     else
     {

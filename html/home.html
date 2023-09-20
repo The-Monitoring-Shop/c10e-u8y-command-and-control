@@ -1,11 +1,337 @@
+<!doctype html>
 <html>
     <head>
 
+        <title>Chronosphere Labs Generator Command and Control</title>
+
+        <link rel="stylesheet" href="/css/base.css"> 
+    
+        <style>
+       
+
+       
+            .main_panel {
+                    position:  absolute;
+                    top:       10%;  
+                    left:      10%; 
+                    width:     80%;
+                    height:    80%;
+                    color: white;
+                    background-color: rgb(33, 35, 44, 0.5);
+                    border-radius: 15px;
+                    padding: 10px;
+                    font-family: 'c10e-regular';
+                    font-size: 20px;
+            }
+
+            .k8s_status {
+                    position:  absolute;
+                    top:       5%;  
+                    left:      5%; 
+                    width:     15%;
+                    height:    10%;
+                    border-radius: 15px;
+                    padding: 10px;
+                    background-color: rgb(33, 35, 44, 0.5);
+                    font-size: 15px;
+            }
+
+            .k8s_status_label {
+                    position:  absolute;
+                    top:       5%;  
+                    height:    10%;
+                    width:     100%;
+                    text-align: left;
+            }
+
+            .k8s_status_ind {
+                    position:  absolute;
+                    top:       30%;  
+                    left:      5%; 
+                    height:    65%;
+                    aspect-ratio: 1 / 1;
+            }
+
+            
+            .labs_gen_status {
+                    position:  absolute;
+                    top:       5%;  
+                    left:      25%; 
+                    width:     15%;
+                    height:    10%;
+                    border-radius: 15px;
+                    background-color: rgb(33, 35, 44, 0.5);
+                    padding: 10px;
+                    font-size: 15px;
+            }
+
+            .labs_gen_status_label {
+                    position:  absolute;
+                    top:       5%;  
+                    height:    10%;
+                    width:     100%;
+                    text-align: left;
+            }
+
+            .labs_gen_status_ind {
+                    position:  absolute;
+                    top:       30%;  
+                    left:      5%; 
+                    height:    65%;
+                    aspect-ratio: 1 / 1;
+            }
+
+            .green_dot {
+                height: 100%;
+                width: 100%;
+                background-color: greenyellow;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .red_dot {
+                height: 100%;
+                width: 100%;
+                background-color: red;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .yellow_dot {
+                height: 100%;
+                width: 100%;
+                background-color: yellow;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .grey_dot {
+                height: 100%;
+                width: 100%;
+                background-color:gray;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+
+            .c10e_logo {
+                position:  absolute;
+                top:       85%;  
+                left:      75%; 
+                width:     25%;
+                height:    15%;
+                color: white;
+
+                font-family: 'c10e-regular';
+                font-size: 30px;
+                letter-spacing: 4px;
+        }
+    
+            form
+            {
+                font-family: 'c10e-regular';
+                font-size: 20px;
+            }
+    
+            input
+            {
+                font-family: 'c10e-regular';
+                font-size: 20px;
+            }
+    
+            input[type=text] 
+            {
+                width: 300px;
+                padding: 12px 20px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                border-radius: 5px;
+                background-color: black;
+                border-color: white;
+                color: white;
+            }
+    
+            input[type=password] 
+            {
+                width: 300px;
+                padding: 12px 20px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                border-radius: 5px;
+                background-color: black;
+                border-color: white;
+                color: white;
+            }
+    
+            input[type=submit] 
+            {
+                width: 25%;
+                padding: 12px 20px;
+                margin: 8px 0;
+                box-sizing: border-box;
+                border-radius: 5px;
+                background-color: #59cc8d;
+                border-color: black;
+                color: black;
+            }
+    
+            .error_text {
+                color: red;
+                font-family: 'c10e-regular';
+                font-size: 15px;
+    
+            }
+    
+            .success_text {
+                color: green;
+                font-family: 'c10e-regular';
+                font-size: 15px;
+    
+            }
+    
+        </style>
+    
+
+        <script>
+
+            var json_loaded = '';
+            var json_parsed = {};
+
+            async function api_call(api, send_payload)
+            {
+                return new Promise(async function(resolve) 
+                {
+
+                    var request = new XMLHttpRequest();
+
+                    request.open('POST', '/api' + api, true);
+                    request.setRequestHeader('Content-type', 'application/json');
+
+                    request.onload = function () 
+                    {
+                        // Begin accessing JSON data here
+
+                        json_loaded = this.response                     
+                        json_parsed = JSON.parse(json_loaded);
+
+                        resolve();
+                    }
+
+                    request.onerror = function() 
+                    {
+                        console.error("ERROR: Failed to call msapi " + api);
+                        resolve();
+                    }
+
+                    // Send request
+                    request.send(JSON.stringify(send_payload));
+
+                }).catch((error) => 
+                {
+                    console.error(error);
+                });
+            }
+
+            async function check_k8s()
+            {
+                // check the status of the K8s cluster
+
+                await api_call('/check_k8s', {});
+                //console.log(json_parsed);
+
+                if(json_parsed.success)
+                {
+                    document.getElementById("k8s_status_id").className = "green_dot";
+                }
+                else
+                {
+                    document.getElementById("k8s_status_id").className = "red_dot";
+                }
+            }
+
+            async function check_labs_gen()
+            {
+                // check the status of Labs Gen
+
+                await api_call('/check_labs_gen', {});
+                //console.log(json_parsed);
+
+                if(json_parsed.success)
+                {
+                    document.getElementById("labs_gen_status_id").className = "green_dot";
+                }
+                else
+                {
+                    document.getElementById("labs_gen_status_id").className = "red_dot";
+                }
+            }
+
+            setInterval(() => 
+            {
+
+                check_k8s();
+                check_labs_gen();
+
+            }, 10000);
+
+        </script>
+
     </head>
     <body>
-        This is the home page
-        <br>
 
-        <a href="/action_logout">Log Out</a>
+        <div class="main_panel">
+
+
+            <!--
+
+            This is the home page
+            <br>
+    
+            <a href="/action_logout">Log Out</a>
+
+            -->
+
+            <div class="k8s_status">
+
+                <div class="k8s_status_label">
+                    K8s Cluster Status
+                </div>
+
+                <div class="k8s_status_ind">
+
+                    <div id="k8s_status_id" class="grey_dot"></div>
+
+                </div>
+
+            </div>
+
+            <div class="labs_gen_status">
+                <div class="labs_gen_status_label">
+                    Labs Gen Status
+                </div>
+
+                <div class="labs_gen_status_ind">
+
+                    <div id="labs_gen_status_id" class="grey_dot"></div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class='c10e_logo'>
+
+
+            <img src="/images/logo__chrono-black.png" style='height: 100%; width: 100%; object-fit: contain'/>
+    
+    
+        </div>
+
+
+        <script>
+            check_k8s();
+            check_labs_gen();
+            
+        </script>
     </body>
 </html>

@@ -13,10 +13,12 @@
 }
 
 body {
-        background-image: url("/images/flock-of-data-banner-01-1-1920x745.webp");
-        background-repeat: no-repeat;
         width: 100%;
         margin: 0px;
         overflow: hidden; 
-        /*cursor: none;*/
+        color: white;
+        background-repeat: no-repeat;
+        background-image: url("/images/flock-of-data-banner-01-1-1920x745.webp");
+        background-size: cover;
+        background-color: black;
 }
