@@ -10,8 +10,7 @@
 # Version History
 #
 # Version	Date		Author		Description
-# 0.0.0	    13/09/2023	Bill Fox	Started development
-# 0.0.1	    23/09/2023	Bill Fox	MVP
+# 0.0.0	    13/05/2023	Bill Fox	Started development
 # ********************************************************************************************************************************************************
 
 WORKING=`dirname $0`
@@ -50,7 +49,26 @@ case $1 in
             exit 1
         fi
 
-        helm upgrade -f ${WORKING}/lab_gen_values/case${case_id}-deploy.yaml c10e-u8y-labs-gen ${WORKING}/helm_charts/lab-gen-initial-build --reuse-values
+        #helm upgrade -f ${WORKING}/lab_gen_values/case${case_id}-deploy.yaml c10e-u8y-labs-gen ${WORKING}/helm_charts/lab-gen-initial-build --reuse-values
+
+
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+	echo "A line"
+
+
+
+
 
         exit $?
 
@@ -68,7 +86,7 @@ case $1 in
             exit 1
         fi
 
-        helm upgrade -f ${WORKING}/lab_gen_values/case${case_id}-rollback.yaml c10e-u8y-labs-gen ${WORKING}/helm_charts/lab-gen-initial-build --reuse-values
+        #helm upgrade -f ${WORKING}/lab_gen_values/case${case_id}-rollback.yaml c10e-u8y-labs-gen ${WORKING}/helm_charts/lab-gen-initial-build --reuse-values
 
         exit $?
     ;;

@@ -8,12 +8,13 @@
 //
 // Version	Date		Author		Description
 // 0.0.0	20230914	Bill Fox	Draft - in development
+// 0.0.1    20230922    Bill Fox    MVP
 // ********************************************************************************************************************************************************
 
 // ********************************************************************************************************************************************************
 // Setup
 // ********************************************************************************************************************************************************
-var ver = '0.0.0';
+var ver = '0.0.1';
 
 var props = require('properties-reader');
 var protocol;
@@ -135,6 +136,7 @@ logger.trace("   |");
 for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
 {
     logger.trace("   +-->" + cases.cases[inc_case].id + " - " + cases.cases[inc_case].name + " - " + cases.cases[inc_case].desc);
+    cases.cases[inc_case].running = false;
 }
 
 // Load Static Allow data
@@ -601,7 +603,7 @@ async function serve_static(action, res, client_id, this_session_id, replacement
 
 async function action_api(api_name, res, client_id, body)
 {
-    let json_loaded = {success: false, msg: "Unidentified Error?"};
+    let json_loaded = {success: false, msg: "Unidentified Error?", code: 1};
     let itsascript = false;
     let script = "";
     let script_result = {
@@ -612,6 +614,9 @@ async function action_api(api_name, res, client_id, body)
         stderr: ""
     };
     let resp_code = 200;
+    let starting_case = false;
+    let stopping_case = false;
+    let case_id = "0000";
 
     logger.debug("Client " + client_id + " requested API " + api_name);
 
@@ -624,6 +629,26 @@ async function action_api(api_name, res, client_id, body)
     {
         script = "../status.sh";
         itsascript = true;
+    }
+    else if(api_name == 'get_cases')
+    {
+        json_loaded = cases;
+    }
+    else if(api_name == 'start_case')
+    {
+        case_id = JSON.parse(body).case_id || "0000";
+        script = "../usecase.sh start " + case_id;
+        //script = "../dummy.sh start " + case_id;
+        itsascript = true;
+        starting_case = true;
+    }
+    else if(api_name == 'stop_case')
+    {
+        case_id = JSON.parse(body).case_id || "0000";
+        script = "../usecase.sh stop " + case_id;
+        //script = "../dummy.sh stop " + case_id;
+        itsascript = true;
+        stopping_case = true;
     }
     else
     {
@@ -638,8 +663,11 @@ async function action_api(api_name, res, client_id, body)
 
         script_result = await run_script(script);
 
+        //console.log(script_result);
+
         json_loaded.success = script_result.success;
         json_loaded.msg = script_result.msg;
+        json_loaded.code = script_result.code;
 
         if(!script_result.success)
         {
@@ -648,6 +676,14 @@ async function action_api(api_name, res, client_id, body)
         else
         {
             logger.debug('Run of script "' + script + '" returned a success code: ' + JSON.stringify(script_result));
+            if(starting_case && !get_case_status(case_id))
+            {
+                set_case_status(case_id, true);
+            }
+            if(stopping_case && get_case_status(case_id))
+            {
+                set_case_status(case_id, false);
+            }
         }
     }
 
@@ -716,7 +752,7 @@ async function run_script(cmd2start)
             }
             else
             {
-                msg = stderr;
+                msg = stdout + "\n" + stderr;
             }
 
             let result = {
@@ -734,6 +770,39 @@ async function run_script(cmd2start)
         logger.error(error);
     });
 
+}
+
+// set_case_status - set running status of given case
+
+function set_case_status(case_id, running)
+{
+    for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
+    {
+        if(cases.cases[inc_case].id == case_id)
+        {
+            cases.cases[inc_case].running = running;
+            break;
+        }
+    }
+}
+
+// get_case_status - get running status of given case
+
+function get_case_status(case_id)
+{
+
+    let running = false;
+
+    for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
+    {
+        if(cases.cases[inc_case].id == case_id)
+        {
+            running = cases.cases[inc_case].running;
+            break;
+        }
+    }
+
+    return(running);
 }
 
 

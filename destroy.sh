@@ -10,7 +10,8 @@
 # Version History
 #
 # Version	Date		Author		Description
-# 0.0.0	    09/05/2023	Bill Fox	Started development
+# 0.0.0	    09/09/2023	Bill Fox	Started development
+# 0.0.1	    22/09/2023	Bill Fox	MVP
 # ********************************************************************************************************************************************************
 
 WORKING=`dirname $0`

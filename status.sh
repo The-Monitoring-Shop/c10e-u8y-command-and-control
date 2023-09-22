@@ -10,13 +10,15 @@
 # Version History
 #
 # Version	Date		Author		Description
-# 0.0.0	    20/05/2023	Bill Fox	Started development
+# 0.0.0	    20/09/2023	Bill Fox	Started development
+# 0.0.1	    22/09/2023	Bill Fox	MVP
 # ********************************************************************************************************************************************************
 
 WORKING=`dirname $0`
 
 pod_list=`kubectl get pods 2>&1 |sed 's/ /~/g'`
 result=0
+some_running=0
 
 for pod in $pod_list
 do
@@ -39,11 +41,15 @@ do
 
 			echo "pod "$pod" status is "$status >&2
 		else
-			
+			some_running=1
 			echo "pod "$pod" status is "$status 
 		fi
 	fi
 done
 
-
+if [ $some_running == 1 ] && [ $result == 1 ]
+then
+	result=2
+fi
+	
 exit $result
