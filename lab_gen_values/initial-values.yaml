@@ -714,7 +714,7 @@ prometheus:
   kube-state-metrics:
     enabled: false
   prometheus-node-exporter:
-    enabled: false
+    enabled: true
   prometheus-pushgateway:
     enabled: false
 
@@ -746,6 +746,9 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
               action: keep
               regex: true
+        - job_name: node
+          static_configs:
+            - targets: ['c10e-u8y-labs-gen-prometheus-node-exporter:9100']
       remote_write:
         - url: http://chronocollector:3030/remote/write
 
