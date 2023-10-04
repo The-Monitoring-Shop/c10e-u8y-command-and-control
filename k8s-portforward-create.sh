@@ -14,4 +14,10 @@
 # 1.0.0	  04/10/2023	Mark Kelly-Smith  Initial release
 # ********************************************************************************************************************************************************
 
+echo "The following services are now available at these paths:"
+echo "Webstore             http://localhost:8080/"
+echo "Feature Flags UI     http://localhost:8080/feature/"
+echo "Load Generator UI    http://localhost:8080/loadgen/"
+echo ""
+
 kubectl port-forward svc/c10e-u8y-labs-gen-frontendproxy 8080:8080
