@@ -44,5 +44,9 @@ done
 
 if [[ -n "$lbip" ]]; then
   echo ""
-  echo "The URL of your LoadBalance access is http://$lbip"
+  echo "The following services are now available at these paths:"
+  echo "Webstore             http://$lbip:8080/"
+  echo "Feature Flags UI     http://$lbip:8080/feature/"
+  echo "Load Generator UI    http://$lbip:8080/loadgen/"
+
 fi
