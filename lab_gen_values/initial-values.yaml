@@ -451,7 +451,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
     resources:
       limits:
-        memory: 120Mi
+        memory: 150Mi
 
   paymentService:
     enabled: true
@@ -623,7 +623,7 @@ opentelemetry-collector:
   mode: deployment
   resources:
     limits:
-      memory: 250Mi
+      memory: 500Mi
   service:
     type: ClusterIP
   ports:
@@ -774,7 +774,7 @@ prometheus:
               regex: true
         - job_name: node
           static_configs:
-            - targets: ['c10e-u8y-labs-gen-prometheus-node-exporter:9100']
+            - targets: ["c10e-u8y-labs-gen-prometheus-node-exporter:9100"]
       remote_write:
         - url: http://chronocollector:3030/remote/write
 
