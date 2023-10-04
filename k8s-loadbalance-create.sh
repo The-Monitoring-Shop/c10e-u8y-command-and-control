@@ -18,8 +18,31 @@ WORKING=$(dirname $0)
 echo $WORKING
 
 # Find our IP and hostname
-export myip="$(curl -s -4 icanhazip.com)\/32"
+export myip="$(curl -s -4 icanhazip.com)/32"
 export hostname=$(hostname -s)
 
 # Substitute the above vars into placeholders in the yaml file and pipe to kubectl create
 envsubst <$WORKING/k8s-loadbalance-file.yaml | kubectl create -f -
+
+# Get the IP we have
+echo "Getting LoadBalance IP Address..."
+SECONDS=0
+lbip=""
+until [ -n "$lbip" ]; do
+  if ((SECONDS > 60)); then
+    echo "LoadBalancer IP not provisioned in time."
+    echo "Please check GKE console or run this command manually;"
+    echo "  kubectl get svc "c10e-u8y-labs-gen-frontendproxy-$hostname-lb" --output jsonpath='{.status.loadBalancer.ingress[0].ip}'"
+    exit 1
+  fi
+
+  lbip=$(kubectl get svc "c10e-u8y-labs-gen-frontendproxy-$hostname-lb" --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+  echo "...waiting for IP Address to be provisioned"
+  sleep 5
+done
+
+if [[ -n "$lbip" ]]; then
+  echo ""
+  echo "The URL of your LoadBalance access is http://$lbip"
+fi
