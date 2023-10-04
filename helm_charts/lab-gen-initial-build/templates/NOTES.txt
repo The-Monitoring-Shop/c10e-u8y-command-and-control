@@ -3,11 +3,15 @@
 ** C10e U8y Lab Gen **
 
 - All services are available via the Frontend proxy: http://localhost:8080
-  by running these commands:
+   by running this command:
      kubectl port-forward svc/{{ include "otel-demo.name" . }}-frontendproxy 8080:8080
+   or, this script,
+     ./k8s-portforward-create.sh
 
   The following services are available at these paths once the proxy is exposed:
   Webstore             http://localhost:8080/
   Feature Flags UI     http://localhost:8080/feature/
   Load Generator UI    http://localhost:8080/loadgen/
 
+- Alternatively, you can run the following command to create a personal LoadBalance service;
+   ./k8s-portforward-create.sh
