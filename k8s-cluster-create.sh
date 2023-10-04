@@ -1,39 +1,63 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
-gcloud container clusters create "cluster-1" \
-  --default-max-pods-per-node 110 \
-  --enable-autoprovisioning \
-  --enable-autoscaling \
-  --enable-ip-alias \
-  --logging=SYSTEM,WORKLOAD \
-  --max-cpu 20 \
-  --max-memory 40 \
-  --max-nodes 10 \
-  --max-pods-per-node 110 \
-  --min-cpu 1 \
-  --min-memory 1 \
-  --min-nodes 0 \
-  --monitoring=SYSTEM \
-  --no-enable-basic-auth \
-  --num-nodes 3 \
+# GCP AutoPilot Cluster
+# gcloud container clusters create-auto "c10e-u8y-labs-1" \
+#   --region "europe-west2" \
+#   --release-channel "regular"
+
+# GCP Standard Cluster
+gcloud container clusters create "c10e-u8y-labs-1" \
   --release-channel "regular" \
-  --machine-type "e2-custom-6-24576"
+  --enable-autoprovisioning \
+  --enable-autoprovisioning-autoupgrade \
+  --enable-autoprovisioning-autorepair \
+  --enable-autorepair \
+  --enable-autoscaling \
+  --enable-autoupgrade \
+  --enable-vertical-pod-autoscaling \
+  --enable-ip-alias \
+  --enable-shielded-nodes \
+  --enable-managed-prometheus \
+  --enable-dataplane-v2 --no-enable-master-authorized-networks \
+  --no-enable-basic-auth \
+  --no-enable-intra-node-visibility \
+  --metadata disable-legacy-endpoints=true \
+  --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver \
+  --max-pods-per-node 110 \
+  --default-max-pods-per-node 110 \
+  --logging=SYSTEM,WORKLOAD \
+  --monitoring=SYSTEM,POD,DEPLOYMENT,DAEMONSET \
+  --min-cpu 4 \
+  --max-cpu 8 \
+  --min-memory 8 \
+  --max-memory 16 \
+  --min-nodes 0 \
+  --max-nodes 2 \
+  --image-type "COS_CONTAINERD" \
+  --disk-type "pd-balanced" \
+  --disk-size "100" \
+  --machine-type "e2-custom-4-8192" \
+  --spot \
+  --num-nodes 1
 
-# gcloud compute machine-types list
-# --machine-type "e2-custom-8-49152"
-# --machine-type "e2-custom-6-24576"
-# --machine-type "e2-medium"
+# Current Resources
+# 1.6 CPU
+# 3.8-5.2GB
 
-# --logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER,NONE \
-# --monitoring=SYSTEM,WORKLOAD,NONE,API_SERVER,CONTROLLER_MANAGER,SCHEDULER,DAEMONSET,DEPLOYMENT,HPA,POD,STATEFULSET,STORAGE
+# Type              Shared?   vCPU  RAM   Count $ph
+# e2-custom-6-24576           6     24    1     $0.38
+# e2-standard-2               2     8     2     $0.31
+# e2-standard-4               4     16    1     $0.29
+# e2-medium         Y         1-2   4     3     $0.28 (not enough CPU)
+# e2-custom-4-8192            4     8     1     $0.26
+# e2-custom-4-6144            4     6     1     $0.25
+# e2-highmem-2                2     16    1     $0.23
+# e2-custom-4-8192            4     8     1     $0.16 (spot)
 
 sleep 2
 
-# List clusters
-# gcloud container clusters list
-
 # setup kubectl for this cluster
-gcloud container clusters get-credentials cluster-1
+gcloud container clusters get-credentials c10e-u8y-labs-1
 
 sleep 2
 
