@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ********************************************************************************************************************************************************
 #
 # The Monitoring Shop & Chronosphere
@@ -14,14 +14,14 @@
 # 0.0.1	    22/09/2023	Bill Fox	MVP
 # ********************************************************************************************************************************************************
 
-WORKING=`dirname $0`
+WORKING=$(dirname $0)
 echo $WORKING
 
-# Step 1: Uninstall the application, using helm charts based on the Open Telemetry demo. 
+# Step 1: Uninstall the application, using helm charts based on the Open Telemetry demo.
 #         These charts will pull the code from the c10e-u8y-labs-gen github repository.
 
 helm uninstall c10e-u8y-labs-gen
 
 # Step 2: Remove the C10e collector
 
-kubectl delete daemonset chronocollector
+kubectl delete -f $WORKING/c10e_col_conf/chronocollector.yaml

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ********************************************************************************************************************************************************
 #
 # The Monitoring Shop & Chronosphere
@@ -14,15 +14,14 @@
 # 0.0.1	    22/09/2023	Bill Fox	MVP
 # ********************************************************************************************************************************************************
 
-WORKING=`dirname $0`
+WORKING=$(dirname $0)
 echo $WORKING
 
 # Step 1: Deploy the C10e collector
 
-kubectl apply -f $WORKING/c10e_col_conf/chronocollector.yaml
+kubectl create -f $WORKING/c10e_col_conf/chronocollector.yaml
 
-# Step 2: Deploy the application, using helm charts based on the Open Telemetry demo. 
+# Step 2: Deploy the application, using helm charts based on the Open Telemetry demo.
 #         These charts will pull the code from the c10e-u8y-labs-gen github repository.
 
 helm install c10e-u8y-labs-gen $WORKING/helm_charts/lab-gen-initial-build --values $WORKING/lab_gen_values/initial-values.yaml
-
