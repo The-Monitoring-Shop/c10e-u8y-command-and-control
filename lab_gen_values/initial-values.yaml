@@ -161,7 +161,12 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;',
+          ]
 
   adService:
     enabled: true
@@ -203,7 +208,12 @@ components:
     initContainers:
       - name: wait-for-redis
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-redis 6379; do echo waiting for redis; sleep 2; done;']
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ include "otel-demo.name" . }}-redis 6379; do echo waiting for redis; sleep 2; done;',
+          ]
 
   checkoutService:
     enabled: true
@@ -236,7 +246,12 @@ components:
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;',
+          ]
 
   currencyService:
     enabled: true
@@ -302,7 +317,12 @@ components:
     initContainers:
       - name: wait-for-ffspostgres
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done']
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ include "otel-demo.name" . }}-ffspostgres 5432; do echo waiting for ffspostgres; sleep 2; done',
+          ]
 
   frauddetectionService:
     enabled: true
@@ -315,11 +335,16 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 200Mi
+        memory: 250Mi
     initContainers:
       - name: wait-for-kafka
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;']
+        command:
+          [
+            "sh",
+            "-c",
+            'until nc -z -v -w30 {{ include "otel-demo.name" . }}-kafka 9092; do echo waiting for kafka; sleep 2; done;',
+          ]
 
   frontend:
     enabled: true
@@ -351,12 +376,12 @@ components:
       - name: WEB_OTEL_SERVICE_NAME
         value: frontend-web
       - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://localhost:4318/v1/traces             # This expects users to use `kubectl port-forward ...`
+        value: http://localhost:4318/v1/traces # This expects users to use `kubectl port-forward ...`
     resources:
       limits:
         memory: 500Mi
     securityContext:
-      runAsUser: 1001  # nextjs
+      runAsUser: 1001 # nextjs
       runAsGroup: 1001
       runAsNonRoot: true
 
@@ -397,7 +422,7 @@ components:
       limits:
         memory: 50Mi
     securityContext:
-      runAsUser: 101  # envoy
+      runAsUser: 101 # envoy
       runAsGroup: 101
       runAsNonRoot: true
 
@@ -441,9 +466,9 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 120Mi
+        memory: 200Mi
     securityContext:
-      runAsUser: 1000  # node
+      runAsUser: 1000 # node
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -481,7 +506,7 @@ components:
       limits:
         memory: 40Mi
     securityContext:
-      runAsUser: 33  # www-data
+      runAsUser: 33 # www-data
       runAsGroup: 33
       runAsNonRoot: true
 
@@ -506,7 +531,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
     resources:
       limits:
-        memory: 500Mi            # This is high to enable supporting the recommendationCache feature flag use case
+        memory: 500Mi # This is high to enable supporting the recommendationCache feature flag use case
 
   shippingService:
     enabled: true
@@ -544,9 +569,9 @@ components:
         value: ffs
     resources:
       limits:
-        memory: 120Mi
+        memory: 200Mi
     securityContext:
-      runAsUser: 999  # postgres
+      runAsUser: 999 # postgres
       runAsGroup: 999
       runAsNonRoot: true
 
@@ -568,9 +593,9 @@ components:
         value: "-Xmx200M -Xms200M"
     resources:
       limits:
-        memory: 500Mi
+        memory: 750Mi
     securityContext:
-      runAsUser: 1000  # appuser
+      runAsUser: 1000 # appuser
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -588,7 +613,7 @@ components:
       limits:
         memory: 20Mi
     securityContext:
-      runAsUser: 999  # redis
+      runAsUser: 999 # redis
       runAsGroup: 1000
       runAsNonRoot: true
 
@@ -598,7 +623,7 @@ opentelemetry-collector:
   mode: deployment
   resources:
     limits:
-      memory: 125Mi
+      memory: 250Mi
   service:
     type: ClusterIP
   ports:
@@ -636,7 +661,7 @@ opentelemetry-collector:
           insecure: true
       # Create an exporter to Prometheus (metrics)
       prometheus:
-        endpoint: '0.0.0.0:9464'
+        endpoint: "0.0.0.0:9464"
         resource_to_telemetry_conversion:
           enabled: true
         enable_open_metrics: true
@@ -736,14 +761,15 @@ prometheus:
   serverFiles:
     prometheus.yml:
       scrape_configs:
-        - job_name: 'opentelemetry-community-demo'
+        - job_name: "opentelemetry-community-demo"
           honor_labels: true
           kubernetes_sd_configs:
             - role: pod
               namespaces:
                 own_namespace: true
           relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
+            - source_labels:
+                [__meta_kubernetes_pod_annotation_opentelemetry_community_demo]
               action: keep
               regex: true
         - job_name: node
@@ -794,9 +820,9 @@ grafana:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-        - name: 'default'
+        - name: "default"
           orgId: 1
-          folder: ''
+          folder: ""
           type: file
           disableDeletion: false
           editable: true
