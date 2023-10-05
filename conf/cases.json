@@ -12,6 +12,24 @@
             "name": "Errors #1",
             "desc": "Break the productcatalogservice URL in frontend so that trace errors start occuring",
             "type": "values"
+        },
+        {
+            "id":   "0011",
+            "name": "Errors #2",
+            "desc": "Break the paymentservice by changing its port number so it doesn't get called",
+            "type": "values"
+        },
+        {
+            "id":   "0012",
+            "name": "Errors #3",
+            "desc": "Break the recommendationservice by changing its port number so it doesn't get called",
+            "type": "values"
+        },
+        {
+            "id":   "0014",
+            "name": "Errors #4",
+            "desc": "Break the calling URL from the frontend to the adservice",
+            "type": "values"
         }
     ]
 }
