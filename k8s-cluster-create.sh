@@ -36,7 +36,7 @@ gcloud container clusters create "c10e-u8y-labs-1" \
   --image-type "COS_CONTAINERD" \
   --disk-type "pd-balanced" \
   --disk-size "100" \
-  --machine-type "e2-custom-4-8192" \
+  --machine-type "e2-standard-4" \
   --spot \
   --num-nodes 1
 
@@ -52,6 +52,7 @@ gcloud container clusters create "c10e-u8y-labs-1" \
 # e2-custom-4-8192            4     8     1     $0.26
 # e2-custom-4-6144            4     6     1     $0.25
 # e2-highmem-2                2     16    1     $0.23
+# e2-standard-4               4     16    1     $0.17 (spot)
 # e2-custom-4-8192            4     8     1     $0.16 (spot)
 
 sleep 2
