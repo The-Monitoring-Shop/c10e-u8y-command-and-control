@@ -689,17 +689,18 @@ opentelemetry-collector:
 
     connectors:
       spanmetrics:
+        namespace: span.metrics
 
     service:
       pipelines:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [logging, otlp, otlp/tracing]
+          exporters: [otlp, logging, spanmetrics, otlp/tracing]
         metrics:
-          receivers: [otlp]
+          receivers: [otlp, spanmetrics]
           processors: [memory_limiter, filter/ottl, transform, batch]
-          exporters: [prometheus, logging, otlp]
+          exporters: [prometheus, logging]
 
 jaeger:
   enabled: false
