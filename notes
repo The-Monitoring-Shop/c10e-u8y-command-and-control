@@ -21,8 +21,22 @@ kubectl port-forward svc/c10e-u8y-labs-gen-frontendproxy 8080:8080
 
 Update Values:
 
-#helm upgrade c10e-u8y-labs-gen ../helm_charts/lab-gen-initial-build --values ./case0001-deloy.yaml
-helm upgrade -f ./case0001-deloy.yaml c10e-u8y-labs-gen ../helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0001-deploy.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0001-rollback.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+
+helm upgrade -f ./lab_gen_values/case0010-deploy.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0010-rollback.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+
+helm upgrade -f ./lab_gen_values/case0011-deploy.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0011-rollback.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+
+helm upgrade -f ./lab_gen_values/case0012-deploy.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0012-rollback.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+
+helm upgrade -f ./lab_gen_values/case0014-deploy.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+helm upgrade -f ./lab_gen_values/case0014-rollback.yaml c10e-u8y-labs-gen ./helm_charts/lab-gen-initial-build --reuse-values
+
+
 
 List values:
 

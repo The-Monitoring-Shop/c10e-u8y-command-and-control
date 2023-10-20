@@ -1,0 +1,30 @@
+# For Compute Engine VM to manage k8s cluster via gcloud
+
+The following IAM access needs assigning to Compute Engine Service Account
+
+1. Create a custom copy of `Kubernetes Engine Developer`
+2. Assign following additional permissions
+
+```
+container.clusterRoleBindings.create
+container.clusterRoleBindings.delete
+container.clusterRoleBindings.update
+container.clusterRoles.bind
+container.clusterRoles.create
+container.clusterRoles.delete
+container.clusterRoles.escalate
+container.clusterRoles.update
+
+container.roleBindings.create
+container.roleBindings.delete
+container.roleBindings.update
+container.roles.bind
+container.roles.create
+container.roles.delete
+container.roles.escalate
+container.roles.update
+```
+
+3. Assign the custom role to the `<account>-compute@developer.gserviceaccount.com` account
+
+> These are availabe in `Kubernetes Engine Service Agent`, but that role has some 1500+ other perms which are not required

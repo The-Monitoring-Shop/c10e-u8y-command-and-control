@@ -42,7 +42,8 @@ gcloud container clusters create "c10e-u8y-labs-1" \
 
 # Current Resources
 # 1.6 CPU
-# 3.8-5.2GB
+# 3.8-5.2GB MEM
+# 16 GB DISK
 
 # Type              Shared?   vCPU  RAM   Count $ph
 # e2-custom-6-24576           6     24    1     $0.38

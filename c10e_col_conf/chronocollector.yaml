@@ -13,45 +13,45 @@ metadata:
     app: chronocollector
   name: chronocollector
 rules:
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  - nodes
-  - pods
-  - endpoints
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes/metrics
-  verbs:
-  - get
-- apiGroups:
-  - discovery.k8s.io
-  resources:
-  - endpointslices
-  verbs:
-  - get
-  - list
-  - watch
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - nodes
+      - pods
+      - endpoints
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/metrics
+    verbs:
+      - get
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -64,9 +64,9 @@ roleRef:
   kind: ClusterRole
   name: chronocollector
 subjects:
-- kind: ServiceAccount
-  name: chronocollector
-  namespace: default
+  - kind: ServiceAccount
+    name: chronocollector
+    namespace: default
 ---
 apiVersion: v1
 data:
@@ -461,7 +461,6 @@ metadata:
   namespace: default
 type: Opaque
 ---
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -498,61 +497,61 @@ spec:
         app: chronocollector
     spec:
       containers:
-      - env:
-        - name: GATEWAY_ADDRESS
-          valueFrom:
-            secretKeyRef:
-              key: address
-              name: chronosphere-secret
-        - name: API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              key: api-token
-              name: chronosphere-secret
-        - name: KUBERNETES_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: KUBERNETES_CLUSTER_NAME
-          value: default
-        - name: KUBERNETES_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: KUBERNETES_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        image: gcr.io/chronosphereio/chronocollector:v0.102.0
-        imagePullPolicy: Always
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health
-            port: 3030
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 5
-        name: chronocollector
-        ports:
-        - containerPort: 3030
-          name: http
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 512Mi
-          requests:
-            cpu: 1000m
-            memory: 512Mi
-        volumeMounts:
-        - mountPath: /etc/chronocollector
-          name: chronocollector-config
+        - env:
+            - name: GATEWAY_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: address
+                  name: chronosphere-secret
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: api-token
+                  name: chronosphere-secret
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: KUBERNETES_CLUSTER_NAME
+              value: default
+            - name: KUBERNETES_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          image: gcr.io/chronosphereio/chronocollector:v0.102.0
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 3030
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: chronocollector
+          ports:
+            - containerPort: 3030
+              name: http
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 1000m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /etc/chronocollector
+              name: chronocollector-config
       serviceAccount: chronocollector
       terminationGracePeriodSeconds: 5
       volumes:
-      - configMap:
+        - configMap:
+            name: chronocollector-config
           name: chronocollector-config
-        name: chronocollector-config
   updateStrategy:
     type: RollingUpdate
