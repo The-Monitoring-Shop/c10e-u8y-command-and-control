@@ -11,7 +11,7 @@
 #
 # Version	Date		    Author		        Description
 # 0.0.0	  03/10/2023	Mark Kelly-Smith  Started development
-# 1.0.0	  04/10/2023	Mark Kelly-Smith  Initial release
+# 0.1.0	  04/10/2023	Mark Kelly-Smith  Initial release
 # ********************************************************************************************************************************************************
 
 WORKING=$(dirname $0)
@@ -22,7 +22,7 @@ export myip="$(curl -s -4 icanhazip.com)/32"
 export hostname=$(hostname -s)
 
 # Substitute the above vars into placeholders in the yaml file and pipe to kubectl create
-envsubst <$WORKING/k8s-loadbalance-file.yaml | kubectl create -f -
+envsubst <$WORKING/loadbalance-file.yaml | kubectl create -f -
 
 # Get the IP we have
 echo "Getting LoadBalance IP Address..."

@@ -3,21 +3,23 @@
 #
 # The Monitoring Shop & Chronosphere
 #
-# k8s-portforward-create.sh
+# k8s-loadbalance-delete.sh
 #
-#   Create a port-forward from local machine port 8080 to svc/c10e-u8y-labs-gen-frontendproxy on port 8080
+#   Delete a named loadbalance service
 #
 # Version History
 #
 # Version	Date		    Author		        Description
 # 0.0.0	  03/10/2023	Mark Kelly-Smith  Started development
-# 1.0.0	  04/10/2023	Mark Kelly-Smith  Initial release
+# 0.1.0	  04/10/2023	Mark Kelly-Smith  Initial release
 # ********************************************************************************************************************************************************
 
-echo "The following services are now available at these paths:"
-echo "Webstore             http://localhost:8080/"
-echo "Feature Flags UI     http://localhost:8080/feature/"
-echo "Load Generator UI    http://localhost:8080/loadgen/"
-echo ""
+WORKING=$(dirname $0)
+echo $WORKING
 
-kubectl port-forward svc/c10e-u8y-labs-gen-frontendproxy 8080:8080
+# Find our IP and hostname
+export myip="$(curl -s -4 icanhazip.com)\/32"
+export hostname=$(hostname -s)
+
+# Substitute the above vars into placeholders in the yaml file and pipe to kubectl delete
+envsubst <$WORKING/loadbalance-file.yaml | kubectl delete -f -

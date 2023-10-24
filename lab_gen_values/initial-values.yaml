@@ -740,7 +740,7 @@ prometheus:
   kube-state-metrics:
     enabled: false
   prometheus-node-exporter:
-    enabled: true
+    enabled: false
   prometheus-pushgateway:
     enabled: false
 
@@ -775,9 +775,10 @@ prometheus:
               regex: true
         - job_name: node
           static_configs:
-            - targets: ["c10e-u8y-labs-gen-prometheus-node-exporter:9100"]
+            - targets:
+                ["prometheus-node-exporter.collectors.svc.cluster.local:9100"]
       remote_write:
-        - url: http://chronocollector:3030/remote/write
+        - url: http://chronocollector.collectors.svc.cluster.local:3030/remote/write
 
 grafana:
   enabled: false
