@@ -14,7 +14,7 @@
 # ********************************************************************************************************************************************************
 
 # Check the collectors namespace exists
-lab=$(kubectl get namespaces collectors)
+lab=$(kubectl get namespaces collectors 2>&1)
 if [ $? == 1 ]; then
   echo "Error: The collectors namespace doest exist"
   exit 1
