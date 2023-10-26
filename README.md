@@ -1,6 +1,6 @@
 # c10e-u8y-command-and-control
 
-Chronosphere (c10e) Command & Control for University (u8y) lab generation.
+Chronosphere (c10e) Command & Control (C&C) for University (u8y) lab generation.
 
 ## Collector & Exporter
 
@@ -12,12 +12,12 @@ Run: `./collectors-deploy.sh`
 kubectl create namespace collectors
 kubectl apply -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
 helm install prometheus-node-exporter ./helm_charts/lab-gen-initial-build/charts/prometheus \
- --values ./lab_gen_values/initial-values.yaml \
- --set prometheus-node-exporter.enabled=true \
- --set alertmanager.enabled=false \
- --set kube-state-metrics.enabled=false \
- --set prometheus-pushgateway.enabled=false \
- --namespace collectors
+  --values ./lab_gen_values/initial-values.yaml \
+  --set prometheus-node-exporter.enabled=true \
+  --set alertmanager.enabled=false \
+  --set kube-state-metrics.enabled=false \
+  --set prometheus-pushgateway.enabled=false \
+  --namespace collectors
 ```
 
 ### Remove
@@ -30,6 +30,8 @@ helm uninstall prometheus-node-exporter --namespace collectors
 kubectl delete namespace collectors
 ```
 
+---
+
 ## Lab
 
 ### Deploy
@@ -40,6 +42,13 @@ Run: `./lab-deploy.sh <lab name>`
 lab="c10e-essentials-1"
 kubectl create namespace $lab
 helm install $lab ./helm_charts/lab-gen-initial-build --values ./lab_gen_values/initial-values.yaml --namespace $lab
+```
+
+### Update
+
+```bash
+lab="c10e-essentials-1"
+helm upgrade $lab ./helm_charts/lab-gen-initial-build --values ./lab_gen_values/initial-values.yaml --namespace $lab
 ```
 
 ### Remove
@@ -65,24 +74,19 @@ kubectl port-forward svc/${lab}-prometheus-server 9090 --namespace $lab
 kubectl port-forward svc/prometheus-node-exporter 9100 --namespace collectors
 ```
 
-### Update
-
-```bash
-lab="c10e-essentials-1"
-helm upgrade $lab ./helm_charts/lab-gen-initial-build --values ./lab_gen_values/initial-values.yaml --namespace $lab
-```
-
 ### Use Cases
 
 Run: `./lab-usecase.sh <lab name> start|stop <caseid>`
 
 ```bash
 lab="c10e-essentials-1"
+
 helm upgrade -f ./lab_gen_values/case0001-deploy.yaml $lab ./helm_charts/lab-gen-initial-build --reuse-values --namespace $lab
+
 helm upgrade -f ./lab_gen_values/case0001-rollback.yaml $lab ./helm_charts/lab-gen-initial-build --reuse-values --namespace $lab
 ```
 
-### List values
+### List Values
 
 ```bash
 lab="c10e-essentials-1"
@@ -91,7 +95,33 @@ helm get values $lab -a --namespace $lab
 
 ---
 
-## For Compute Engine VM to manage k8s cluster
+## Setup
+
+### GCloud CLI
+
+To setup SSH access from your own machine, you must first setup the gcloud SDK.
+
+Install;
+
+- <https://cloud.google.com/sdk/docs/install>
+
+Set Defaults, if not set as part of init;
+
+- <https://cloud.google.com/compute/docs/gcloud-compute#set_default_zone_and_region_in_your_local_client>
+- `gcloud config set compute/region us-central1`
+- `gcloud config set compute/zone us-central1-a`
+
+You can then SSH to the VM instance;
+
+- `gcloud compute ssh university --tunnel-through-iap`
+
+NB: Daily, you will need to re-authenticate to gcloud - you do not need to re-init each day, just re-login;
+
+- `gcloud auth login`
+
+### GCloud IAM
+
+For Compute Engine VM to Manage k8s Cluster
 
 The following IAM access needs assigning to Compute Engine Service Account
 
@@ -118,7 +148,7 @@ container.roles.escalate
 container.roles.update
 ```
 
-> These are availabe in `Kubernetes Engine Service Agent`, but that role has some 1500+ other perms which are not required
+> These are available in `Kubernetes Engine Service Agent`, but that role has some 1500+ other perms which are not required
 
 3. Add roles/logging.viewer
-4. Assign the custom role to the `<account>-compute@developer.gserviceaccount.com` account
+4. Assign the custom role to the service account used by the VM instance
