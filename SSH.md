@@ -4,17 +4,33 @@ Via SSH, you can perform the script commands under [SETUP](SETUP.md) `Collector 
 
 Initially, you will need to configure your machine to access GCP via the GCloud CLI package - see `GCloud | CLI` section in [SETUP](SETUP.md).
 
+## Connecting
+
 You can then SSH to the VM instance;
 
-- `gcloud compute ssh university --tunnel-through-iap`
+`gcloud compute ssh university --tunnel-through-iap`
 
-NB: Daily, you will need to re-authenticate to gcloud.
+NB: Daily, you will need to re-login to gcloud.
 
-> You do not need to re-init each day, just re-login;
+`gcloud auth login`
 
-- `gcloud auth login`
+## Initial user config
 
-> At this point, after your initial login, run the `/opt/shared_config/setupUser.sh` script to setup your user account on the VM.
+After your initial login, run the `/opt/shared_config/setupUser.sh` script to setup your user account on the VM.
+
+## Locations
+
+Under `/opt` the following locations exist;
+
+- `containerd` is a system location and should not be touched
+
+- `git` is where the c10e u8y Git repositories are stored locally
+
+- `google-cloud-sdk` is where the GCloud CLI binaries are stored
+
+- `shared_config` is where any shared config for initial setup is stored
+
+## Other commands
 
 The below section(s) are covered via the `/opt/shared_config/setupUser.sh` script on the GCP VM, and provided here for completness.
 
