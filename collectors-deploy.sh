@@ -37,4 +37,5 @@ helm install prometheus-node-exporter $WORKING/helm_charts/lab-gen-initial-build
   --set alertmanager.enabled=false \
   --set kube-state-metrics.enabled=false \
   --set prometheus-pushgateway.enabled=false \
+  --set server.remoteWrite[0].url='http://chronocollector.collectors.svc.cluster.local:3030/remote/write' \
   --namespace collectors
