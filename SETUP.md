@@ -79,3 +79,7 @@ Set Defaults, if not set as part of init;
 - <https://cloud.google.com/compute/docs/gcloud-compute#set_default_zone_and_region_in_your_local_client>
 - `gcloud config set compute/region us-central1`
 - `gcloud config set compute/zone us-central1-a`
+
+Also need to get credentials:
+
+- gcloud container clusters get-credentials university --region=us-central1
