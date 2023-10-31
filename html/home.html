@@ -23,9 +23,22 @@
                     font-size: 20px;
             }
 
+
+            .k8s_select {
+                    position:  absolute;
+                    top:       0%;  
+                    left:      5%; 
+                    width:     20%;
+                    height:    5%;
+                    border-radius: 15px;
+                    background-color: rgb(33, 35, 44, 0.5);
+                    font-size: 15px;
+                    text-align: left;
+            }
+
             .k8s_status {
                     position:  absolute;
-                    top:       5%;  
+                    top:       7%;  
                     left:      5%; 
                     width:     20%;
                     height:    15%;
@@ -44,16 +57,28 @@
 
             .k8s_status_ind {
                     position:  absolute;
-                    top:       30%;  
+                    top:       35%;  
                     left:      5%; 
                     height:    65%;
                     aspect-ratio: 1 / 1;
             }
 
+            .labs_gen_select {
+                    position:  absolute;
+                    top:       0%;  
+                    left:      30%; 
+                    width:     20%;
+                    height:    5%;
+                    border-radius: 15px;
+                    background-color: rgb(33, 35, 44, 0.5);
+                    font-size: 15px;
+                    text-align: left;
+            }
+
             
             .labs_gen_status {
                     position:  absolute;
-                    top:       5%;  
+                    top:       7%;  
                     left:      30%; 
                     width:     20%;
                     height:    15%;
@@ -72,7 +97,7 @@
 
             .labs_gen_status_ind {
                     position:  absolute;
-                    top:       30%;  
+                    top:       35%;  
                     left:      5%; 
                     height:    65%;
                     aspect-ratio: 1 / 1;
@@ -105,9 +130,15 @@
             .grey_dot {
                 height: 100%;
                 width: 100%;
-                background-color:gray;
+                background-color: gray;
                 border-radius: 50%;
                 display: inline-block;
+            }
+
+            .fill_img {
+                flex-shrink: 0;
+                min-width: 100%;
+                min-height: 100%
             }
 
             .cases_panel {
@@ -250,6 +281,7 @@
             var json_loaded = '';
             var json_parsed = {};
             var cases = {};
+            var lab_ns = "";
 
 
             function waiting_popup_show(popup_html) 
@@ -312,6 +344,8 @@
             {
                 // check the status of the K8s cluster
 
+                document.getElementById("k8s_status_id").innerHTML = '<img class="fill_img" src="/images/saving.gif">';
+
                 await api_call('/check_k8s', {});
                 //console.log(json_parsed);
 
@@ -323,35 +357,45 @@
                 {
                     document.getElementById("k8s_status_id").className = "red_dot";
                 }
+
+                document.getElementById("k8s_status_id").innerHTML = '';
             }
 
             async function check_labs_gen()
             {
                 // check the status of Labs Gen
 
-                await api_call('/check_labs_gen', {});
-                //console.log(json_parsed);
+                if(lab_ns != "")
+                {
 
-                if(json_parsed.success)
-                {
-                    document.getElementById("labs_gen_status_id").className = "green_dot";
-                }
-                else
-                {
-                    if(json_parsed.code == 2)
+                    document.getElementById("labs_gen_status_id").innerHTML = '<img class="fill_img" src="/images/saving.gif">';
+
+                    await api_call('/check_labs_gen', {"ns": lab_ns});
+                    //console.log(json_parsed);
+
+                    if(json_parsed.success)
                     {
-                        document.getElementById("labs_gen_status_id").className = "yellow_dot";
+                        document.getElementById("labs_gen_status_id").className = "green_dot";
                     }
                     else
                     {
-                        document.getElementById("labs_gen_status_id").className = "red_dot";
+                        if(json_parsed.code == 2)
+                        {
+                            document.getElementById("labs_gen_status_id").className = "yellow_dot";
+                        }
+                        else
+                        {
+                            document.getElementById("labs_gen_status_id").className = "red_dot";
+                        }
                     }
+
+                    document.getElementById("labs_gen_status_id").innerHTML = "";
                 }
             }
 
             async function load_cases(case_id)
             {
-                await api_call('/get_cases', {});
+                await api_call('/get_cases', {"ns": lab_ns});
                 cases = json_parsed;
 
                 select = document.getElementById("cases");
@@ -372,6 +416,30 @@
                 await change_case();
             }
 
+            async function load_lab_list()
+            {
+                await api_call('/list_labs', {});
+
+                let lab_list = json_parsed;
+
+                select = document.getElementById("lab_inst");
+                select.options.length = 0;
+
+                for(let inc_inst = 0; inc_inst < lab_list.msg.lab_list.length; inc_inst ++)
+                {
+                    let opt = document.createElement('option');
+                    opt.value = lab_list.msg.lab_list[inc_inst];
+                    opt.innerHTML = lab_list.msg.lab_list[inc_inst];
+                    select.appendChild(opt);
+
+                }
+
+                lab_ns = lab_list.msg.lab_list[0];
+
+                //console.log("Lab Inst = " + lab_ns);
+
+            }
+
             async function change_case()
             {
                 let case_id = document.getElementById("cases").value;
@@ -389,6 +457,15 @@
                 document.getElementById("cases_textarea").innerHTML = html;
             }
 
+            async function change_lab_inst()
+            {
+                lab_ns = document.getElementById("lab_inst").value;
+                //console.log("Lab Inst Changed to " + lab_ns);
+                document.getElementById("labs_gen_status_id").className = "grey_dot";
+                check_labs_gen();
+                load_cases();
+            }
+
             async function start_case()
             {
                 waiting_popup_show('Please Wait <br> <img src="/images/saving.gif"></img>');
@@ -396,7 +473,7 @@
                 let case_id = document.getElementById("cases").value;
                 
 
-                await api_call('/start_case', {case_id: case_id});
+                await api_call('/start_case', {case_id: case_id, "ns": lab_ns});
                 let result = json_parsed.msg.replaceAll("\n","<br>");
                 //console.log(json_parsed);
 
@@ -414,7 +491,7 @@
 
                 let case_id = document.getElementById("cases").value;
 
-                await api_call('/stop_case', {case_id: case_id});
+                await api_call('/stop_case', {case_id: case_id, "ns": lab_ns});
                 let result = json_parsed.msg.replaceAll("\n","<br>");
                 //console.log(json_parsed);
 
@@ -453,15 +530,23 @@
 
             -->
 
+            <div class="k8s_select" id="k8s_select">
+                <label for="k8s">Select K8s Cluster: </label><select name="k8s" id="k8s"><option value="university">university</option></select>
+            </div>
+
+            <div class="labs_gen_select" id="labs_gen_select">
+                <label for="lab_inst">Select Lab Instance: </label><select name="lab_inst" id="lab_inst"></select>
+            </div>
+
             <div class="k8s_status">
 
                 <div class="k8s_status_label">
-                    K8s Cluster Status
+                    Cluster Status
                 </div>
 
                 <div class="k8s_status_ind">
 
-                    <div id="k8s_status_id" class="grey_dot"></div>
+                    <div id="k8s_status_id" class="grey_dot"><img class="fill_img" src="/images/saving.gif"></div>
 
                 </div>
 
@@ -474,7 +559,7 @@
 
                 <div class="labs_gen_status_ind">
 
-                    <div id="labs_gen_status_id" class="grey_dot"></div>
+                    <div id="labs_gen_status_id" class="grey_dot"><img class="fill_img" src="/images/saving.gif"></div>
 
                 </div>
             </div>
@@ -521,14 +606,26 @@
 
         <script>
 
+            async function init()
+            {
+
+                await load_lab_list();
+
+                check_k8s();
+                check_labs_gen();
+
+                load_cases("0000");
+            }
+
             document.getElementById("dropdown").addEventListener("change", (e) => {
                 change_case();
             });
 
-            check_k8s();
-            check_labs_gen();
+            document.getElementById("labs_gen_select").addEventListener("change", (e) => {
+                change_lab_inst();
+            });
 
-            load_cases("0000");
+            init();
             
         </script>
     </body>

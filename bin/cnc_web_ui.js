@@ -9,12 +9,13 @@
 // Version	Date		Author		Description
 // 0.0.0	20230914	Bill Fox	Draft - in development
 // 0.0.1    20230922    Bill Fox    MVP
+// 0.1.0    20231031    Bill Fox    Updated for multi lab use
 // ********************************************************************************************************************************************************
 
 // ********************************************************************************************************************************************************
 // Setup
 // ********************************************************************************************************************************************************
-var ver = '0.0.1';
+var ver = '0.1.0';
 
 var props = require('properties-reader');
 var protocol;
@@ -73,6 +74,7 @@ var log_level = config.get("log_level");
 var cases_file = config.get("cases");
 
 var dev_mode = config.get("dev_mode");
+var ns_ignore = config.get("ns_ignore");
 
 
 // ** Set Up Logging **
@@ -112,10 +114,22 @@ logger.info("+-->inactivity_timeout = " + inactivity_timeout);
 logger.info("+-->anon_allow = " + anon_allow);
 logger.info("+-->anon_rbac = " + anon_rbac);
 logger.info("+-->dev_mode = " + dev_mode);
+logger.info("+-->ns_ignore = " + ns_ignore);
 
 
 var static_allow = {};
 var cases = {};
+
+// Load namespace ignore setting into hashmap for quick lookup
+
+var ns_ignore_lookup = new HashMap();
+var ns_ignore_array = ns_ignore.split(',');
+
+for(let ns_i = 0; ns_i < ns_ignore_array.length; ns_i ++)
+{
+    ns_ignore_lookup.set(ns_ignore_array[ns_i],ns_i);
+}
+ns_ignore_lookup.set('NAME',-1);
 
 // Load user case data
 
@@ -133,10 +147,14 @@ catch(e)
 }
 
 logger.trace("   |");
+
+var case_status = new HashMap();
+
 for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
 {
     logger.trace("   +-->" + cases.cases[inc_case].id + " - " + cases.cases[inc_case].name + " - " + cases.cases[inc_case].desc);
-    cases.cases[inc_case].running = false;
+    //cases.cases[inc_case].running = false;
+    case_status.set(cases.cases[inc_case].id, new HashMap());
 }
 
 // Load Static Allow data
@@ -224,6 +242,7 @@ load_html();
 
 var font_store = new HashMap();
 load_fonts();
+
 
 
 
@@ -617,6 +636,7 @@ async function action_api(api_name, res, client_id, body)
     let starting_case = false;
     let stopping_case = false;
     let case_id = "0000";
+    let ns = JSON.parse(body).ns || "";
 
     logger.debug("Client " + client_id + " requested API " + api_name);
 
@@ -627,17 +647,23 @@ async function action_api(api_name, res, client_id, body)
     }
     else if(api_name == 'check_labs_gen')
     {
-        script = "../status.sh";
+        //console.log(ns);
+        script = "../lab-status.sh " + ns;
         itsascript = true;
     }
     else if(api_name == 'get_cases')
     {
         json_loaded = cases;
+
+        for(let inc_case = 0; inc_case < json_loaded.cases.length; inc_case ++)
+        {
+            json_loaded.cases[inc_case].running = get_case_status(json_loaded.cases[inc_case].id, ns)
+        }
     }
     else if(api_name == 'start_case')
     {
         case_id = JSON.parse(body).case_id || "0000";
-        script = "../usecase.sh start " + case_id;
+        script = "../lab-usecase.sh " + ns + " start " + case_id;
         //script = "../dummy.sh start " + case_id;
         itsascript = true;
         starting_case = true;
@@ -645,10 +671,16 @@ async function action_api(api_name, res, client_id, body)
     else if(api_name == 'stop_case')
     {
         case_id = JSON.parse(body).case_id || "0000";
-        script = "../usecase.sh stop " + case_id;
+        ns = JSON.parse(body).ns || "";
+        script = "../lab-usecase.sh " + ns + " stop " + case_id;
         //script = "../dummy.sh stop " + case_id;
         itsascript = true;
         stopping_case = true;
+    }
+    else if(api_name == 'list_labs')
+    {
+        script = "kubectl get ns";
+        itsascript = true;
     }
     else
     {
@@ -665,6 +697,11 @@ async function action_api(api_name, res, client_id, body)
 
         //console.log(script_result);
 
+        if(api_name == 'list_labs')
+        {
+            script_result.msg = parse_lab_list(script_result.msg);
+        }
+
         json_loaded.success = script_result.success;
         json_loaded.msg = script_result.msg;
         json_loaded.code = script_result.code;
@@ -676,13 +713,13 @@ async function action_api(api_name, res, client_id, body)
         else
         {
             logger.debug('Run of script "' + script + '" returned a success code: ' + JSON.stringify(script_result));
-            if(starting_case && !get_case_status(case_id))
+            if(starting_case && !get_case_status(case_id, ns))
             {
-                set_case_status(case_id, true);
+                set_case_status(case_id, ns, true);
             }
-            if(stopping_case && get_case_status(case_id))
+            if(stopping_case && get_case_status(case_id, ns))
             {
-                set_case_status(case_id, false);
+                set_case_status(case_id, ns, false);
             }
         }
     }
@@ -774,8 +811,11 @@ async function run_script(cmd2start)
 
 // set_case_status - set running status of given case
 
-function set_case_status(case_id, running)
+function set_case_status(case_id, ns, running)
 {
+
+    /*
+
     for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
     {
         if(cases.cases[inc_case].id == case_id)
@@ -784,14 +824,27 @@ function set_case_status(case_id, running)
             break;
         }
     }
+
+    */
+    if(case_status.has(case_id))
+    {
+        case_status.get(case_id).set(ns,running);
+    }
+    else
+    {
+        case_status.set(case_id, new HashMap())
+        case_status.get(case_id).set(ns, running);
+    }
 }
 
 // get_case_status - get running status of given case
 
-function get_case_status(case_id)
+function get_case_status(case_id, ns)
 {
 
     let running = false;
+
+    /*
 
     for(let inc_case = 0; inc_case < cases.cases.length; inc_case ++)
     {
@@ -801,10 +854,53 @@ function get_case_status(case_id)
             break;
         }
     }
+    */
+    
+    if(case_status.has(case_id))
+    {
+        if(case_status.get(case_id).has(ns))
+        {
+            running = case_status.get(case_id).get(ns);
+        }
+        else
+        {
+            case_status.get(case_id).set(ns, false);
+        }
+    }
+    else
+    {
+        case_status.set(case_id, new HashMap())
+        case_status.get(case_id).set(ns, false);
+    }
 
     return(running);
 }
 
+// parse_lab_list - parse result for lab list command into json, removing ignored namespaces as required.
+
+function parse_lab_list(raw_output)
+{
+    let result = {};
+
+    let text_lines = raw_output.split('\n');
+    let lab_count = 0;
+    let lab_names = [];
+
+    for(let i = 0; i < text_lines.length; i ++)
+    {
+        let found_name = text_lines[i].split(' ')[0];
+
+        if(!ns_ignore_lookup.has(found_name) && found_name != '')
+        {
+            lab_names[lab_count] = found_name;
+            lab_count ++;
+        }
+    }
+
+    result = {lab_list: lab_names};
+
+    return result;
+}
 
 
 
