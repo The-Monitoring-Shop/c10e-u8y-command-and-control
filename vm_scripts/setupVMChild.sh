@@ -44,7 +44,7 @@ echo "====================="
 # sudo ./google-cloud-sdk/install.sh
 
 curl -fsSL https://sdk.cloud.google.com -o /opt/shared_config/installGCloudCLI.sh
-sudo bash /opt/shared_config/installGCloudCLI.sh --disable-prompts --install-dir=/opt/shared_config
+sudo bash /opt/shared_config/installGCloudCLI.sh --disable-prompts --install-dir=/opt
 
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/gcloudrc -o /opt/shared_config/gcloudrc
 # sudo chmod 775 /opt/shared_config/gcloudrc

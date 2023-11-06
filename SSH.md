@@ -13,8 +13,12 @@ You can then SSH to the VM instance;
 NB:
 The VM name may have a suffix on the end of `university` - i.e. `university-xyza` - be sure to use this if it exists.
 
-Daily, you will need to re-login to gcloud on your local machine.  
-`gcloud auth login`
+Daily, you will need to re-login to gcloud on your local machine, using `gcloud auth login`.
+
+Optionally, to enable better performance, for SSH and Web GUI via port-forward, install Python NumPy package;  
+`$(gcloud info --format="value(basic.python_location)") -m pip install numpy`
+Any ssh/port-forward issues or errors relating to NumPy library, try the following env settings and run again;
+`export CLOUDSDK_PYTHON_SITEPACKAGES=1`
 
 ## Initial server setup
 
@@ -47,8 +51,7 @@ Under `/opt` the following locations exist;
 
 The below section(s) are covered via the `/opt/shared_config/setupUser.sh` script on the GCP VM, and provided here for completness.
 
-To obtain k8s cluster credentials, for kubcetl;
-
+To obtain k8s cluster credentials, for kubectl;  
 `gcloud container clusters get-credentials university`
 
 ---

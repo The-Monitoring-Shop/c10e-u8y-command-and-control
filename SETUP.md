@@ -79,9 +79,3 @@ kubectl delete -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
 helm uninstall prometheus-node-exporter --namespace collectors
 kubectl delete namespace collectors
 ```
-
----
-
-Also need to get credentials:
-
-- gcloud container clusters get-credentials university --region=us-central1
