@@ -1,35 +1,5 @@
 # Setup
 
-## Collector & Exporter
-
-### Deploy
-
-Run: `./collectors-deploy.sh`
-
-```bash
-kubectl create namespace collectors
-kubectl apply -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
-helm install prometheus-node-exporter ./helm_charts/lab-gen-initial-build/charts/prometheus \
-  --values ./lab_gen_values/initial-values.yaml \
-  --set prometheus-node-exporter.enabled=true \
-  --set alertmanager.enabled=false \
-  --set kube-state-metrics.enabled=false \
-  --set prometheus-pushgateway.enabled=false \
-  --namespace collectors
-```
-
-### Remove
-
-Run: `./collectors-destroy.sh`
-
-```bash
-kubectl delete -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
-helm uninstall prometheus-node-exporter --namespace collectors
-kubectl delete namespace collectors
-```
-
----
-
 ## GCloud
 
 ### IAM
@@ -79,6 +49,38 @@ Set Defaults, if not set as part of init;
 - <https://cloud.google.com/compute/docs/gcloud-compute#set_default_zone_and_region_in_your_local_client>
 - `gcloud config set compute/region us-central1`
 - `gcloud config set compute/zone us-central1-a`
+
+---
+
+## Collector & Exporter
+
+### Deploy
+
+Run: `./collectors-deploy.sh`
+
+```bash
+kubectl create namespace collectors
+kubectl apply -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
+helm install prometheus-node-exporter ./helm_charts/lab-gen-initial-build/charts/prometheus \
+  --values ./lab_gen_values/initial-values.yaml \
+  --set prometheus-node-exporter.enabled=true \
+  --set alertmanager.enabled=false \
+  --set kube-state-metrics.enabled=false \
+  --set prometheus-pushgateway.enabled=false \
+  --namespace collectors
+```
+
+### Remove
+
+Run: `./collectors-destroy.sh`
+
+```bash
+kubectl delete -f ./c10e_col_conf/chronocollector.yaml --namespace collectors
+helm uninstall prometheus-node-exporter --namespace collectors
+kubectl delete namespace collectors
+```
+
+---
 
 Also need to get credentials:
 

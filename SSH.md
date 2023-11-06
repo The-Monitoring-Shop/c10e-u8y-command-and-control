@@ -10,9 +10,22 @@ You can then SSH to the VM instance;
 
 `gcloud compute ssh university --tunnel-through-iap`
 
-NB: Daily, you will need to re-login to gcloud.
+NB:
+The VM name may have a suffix on the end of `university` - i.e. `university-xyza` - be sure to use this if it exists.
 
+Daily, you will need to re-login to gcloud on your local machine.  
 `gcloud auth login`
+
+## Initial server setup
+
+The following can be run to perform an initial (one-time) configuration of the server from github stored script.
+
+```bash
+sudo mkdir -p /opt/shared_config
+sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVM.sh -o /opt/shared_config/setupVM.sh
+cd /opt/shared_config
+sudo bash ./setupVM.sh
+```
 
 ## Initial user config
 

@@ -3,7 +3,7 @@
 #
 # The Monitoring Shop & Chronosphere
 #
-# vm-setup.sh
+# setupUser.sh
 #
 #   Setup a new user on a C&C VM server
 #
