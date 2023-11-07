@@ -23,6 +23,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
     echo "---------"
     echo ""
     if [[ -f /opt/shared_config/kube-config-university ]]; then
+      echo "Copying /opt/shared_config/kube-config-university to /home/$USER/.kube/config"
       mkdir -p /home/$USER/.kube
       cp /opt/shared_config/kube-config-university ~/.kube/config
       chmod 600 ~/.kube/config
@@ -30,6 +31,8 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
       echo "No kube config file found at /opt/shared_config/kube-config-university"
       echo "Run setupUser.sh from another user, with GCloud config correct, then run setup again for c10e user"
     fi
+
+    echo "source /opt/shared_config/gcloudrc" >>~/.bashrc
 
   else
     echo "Docker Setup"
@@ -79,8 +82,9 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
     # Copy kube config file to shared_config
     if [[ -f /home/$USER/.kube/config ]] && [[ ! -f /opt/shared_config/kube-config-university ]]; then
       echo "Copying /home/$USER/.kube/config to /opt/shared_config/kube-config-university"
-      cp /home/$USER/.kube/config /opt/shared_config/kube-config-university
-      chmod 770 /opt/shared_config/kube-config-university
+      sudo cp /home/$USER/.kube/config /opt/shared_config/kube-config-university
+      sudo chown c10e:docker /opt/shared_config/kube-config-university
+      sudo chmod 770 /opt/shared_config/kube-config-university
     fi
 
     echo ""
