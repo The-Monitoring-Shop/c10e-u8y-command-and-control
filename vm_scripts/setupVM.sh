@@ -96,8 +96,6 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "Creating default users/groups"
   echo "============================="
 
-  # Create docker groups
-  # sudo groupadd docker -g 999
   # Create c10e user, with docker as main group
   sudo useradd -m -s /usr/bin/bash -g 999 c10e
   # Add c10e user to sudoers

@@ -42,7 +42,7 @@ The following can be run to perform an initial (one-time) configuration of the s
 
 ## Initial user config
 
-After your initial login, run the `/opt/shared_config/setupUser.sh` script to setup your user account on the VM.
+After your initial login, run the `bash /opt/shared_config/setupUser.sh` script to setup your user account on the VM.
 
 ## Locations
 
@@ -61,7 +61,7 @@ Under `/opt` the following locations exist;
 The below section(s) are covered via the `/opt/shared_config/setupUser.sh` script on the GCP VM, and provided here for completness.
 
 To obtain k8s cluster credentials, for kubectl;  
-`gcloud container clusters get-credentials university`
+`gcloud container clusters get-credentials university --zone=us-central1`
 
 ---
 

@@ -39,6 +39,9 @@ echo "===================="
 sudo mkdir -p $mount_point/git
 sudo mkdir -p $mount_point/shared_config
 
+sudo chmod g+w /opt/
+sudo chmod g+w $mount_point/
+
 echo "..downloading scripts"
 echo "====================="
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh -o $mount_point/shared_config/setupVMDisk.sh
