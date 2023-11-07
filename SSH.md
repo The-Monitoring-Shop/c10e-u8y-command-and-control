@@ -22,7 +22,7 @@ Any ssh/port-forward issues or errors relating to NumPy library, try the followi
 
 ## Initial server setup
 
-There is 2 aspects to the inital server setup;
+There is 2 aspects to the inital server setup - both only need to be run once;
 
 ### Data disk setup
 
@@ -38,7 +38,7 @@ It assumes the devicename for the data disk is `university`, presenting a symlin
 
 The following can be run to perform an initial (one-time) configuration of the server from github stored script.
 
-`sudo bash /opt/shared_config/setupVM.sh`
+`sudo bash /mnt/disks/google-university/shared_config/setupVM.sh`
 
 ## Initial user config
 

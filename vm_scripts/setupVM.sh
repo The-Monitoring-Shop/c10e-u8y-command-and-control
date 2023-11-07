@@ -17,6 +17,14 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "Ubuntu detected, continuing..."
   echo "=============================="
 
+  mount_point="/mnt/disks/google-university"
+
+  if [[ -f $mount_point/setupVM.done ]]; then
+    echo "This script has already been run!"
+    echo "If you wish to re-run it, please delete the file $mount_point/setupVM.done"
+    exit 1
+  fi
+
   echo "Running apt update and base installs"
   echo "===================================="
   sudo apt-get update
@@ -84,35 +92,21 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   sudo apt-get install -y make
 
   echo "============================="
-  echo "Setting up folders and access"
+  echo "Creating default users/groups"
   echo "============================="
 
-  mount_point="/mnt/disks/google-university"
-
+  # Create docker groups
   sudo groupadd docker -g 999
-  sudo usermod -aG docker $USER
-  sudo su - $USER -c 'newgrp docker'
-
-  echo "..mounting data disk"
-  echo "===================="
-  sudo mkdir -p $mount_point
-  sudo mount -o discard,defaults /dev/sdb $mount_point
-
-  echo "..setting access"
-  echo "================"
-  sudo chown -R root:docker $mount_point/git/
-  sudo chown -R root:docker $mount_point/google-cloud-sdk/
-  sudo chown -R root:docker $mount_point/shared_config/
-
-  echo "..symlinking folders"
-  echo "===================="
-  sudo ln -s $mount_point/git /opt/git
-  sudo ln -s $mount_point/shared_config /opt/shared_config
-  sudo ln -s $mount_point/google-cloud-sdk /opt/google-cloud-sdk
+  # Create c10e user, with docker as main group
+  sudo useradd -m -s /usr/bin/bash -g 999 c10e
+  # Add c10e user to sudoers
+  echo "c10e  ALL=(ALL) NOPASSWD:ALL" | sudo tee --append /etc/sudoers.d/c10e
 
   echo "Branching to child script..."
   echo "============================"
-  sudo su - $USER -c 'bash /opt/shared_config/setupVMChild.sh'
+  sudo su - c10e -c 'bash /mnt/disks/google-university/shared_config/setupVMChild.sh'
+
+  touch $mount_point/setupVM.done
 
 else
   echo "Sorry, this script currently supports Ubuntu only."

@@ -17,38 +17,32 @@ echo "...now in child script"
 echo "======================"
 echo ""
 
-echo "Updating folders"
+echo "============================="
+echo "Setting up folders and access"
+echo "============================="
+
+echo "..mounting data disk"
+echo "===================="
+sudo mkdir -p $mount_point
+sudo mount -o discard,defaults /dev/sdb $mount_point
+
+echo "..setting access"
 echo "================"
-cd /opt
-
-# Setting access/ownership
+# cd /opt
 # sudo chmod 775 .
-# sudo chown -R root:docker .
+sudo chown -R c10e:docker $mount_point/git/
+sudo chown -R c10e:docker $mount_point/google-cloud-sdk/
+sudo chown -R c10e:docker $mount_point/shared_config/
 
-# Creating subfolders
-# mkdir -p /opt/git
+echo "..symlinking folders"
+echo "===================="
+sudo ln -s $mount_point/git /opt/git
+sudo ln -s $mount_point/shared_config /opt/shared_config
+sudo ln -s $mount_point/google-cloud-sdk /opt/google-cloud-sdk
 
-# Copy setupUser.sh from GitHub
-# sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupUser.sh -o /opt/shared_config/setupUser.sh
-# chmod +x /opt/shared_config/setupUser.sh
-
-# echo "========================"
-# echo "Removing GCloud CLI snap"
-# echo "========================"
-# sudo snap remove google-cloud-cli
-
-# echo "Installing GCloud CLI"
-# echo "====================="
-# curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-450.0.0-linux-x86_64.tar.gz
-# tar -xf google-cloud-cli-450.0.0-linux-x86_64.tar.gz
-# sudo ./google-cloud-sdk/install.sh
-
-# curl -fsSL https://sdk.cloud.google.com -o /opt/shared_config/installGCloudCLI.sh
-# sudo bash /opt/shared_config/installGCloudCLI.sh --disable-prompts --install-dir=/opt
-
-# sudo chmod 775 /opt/shared_config/gcloudrc
 source /opt/shared_config/gcloudrc
 
-echo "..Installing components"
-echo "======================="
+echo "================================"
+echo "Installing GCloud CLI components"
+echo "================================"
 sudo gcloud components install gke-gcloud-auth-plugin

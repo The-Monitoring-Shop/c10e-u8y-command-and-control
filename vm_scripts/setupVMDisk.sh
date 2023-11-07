@@ -25,6 +25,10 @@ if [[ -f $mount_point/setupVMDisk.done ]]; then
   exit 1
 fi
 
+echo "..formatting data disk"
+echo "======================"
+sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb
+
 echo "..mounting data disk"
 echo "===================="
 sudo mkdir -p $mount_point
