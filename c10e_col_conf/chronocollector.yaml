@@ -226,11 +226,11 @@ data:
           # annotationsToAugment: ["app.kubernetes.io/component"]
           # # The following two flags supersede the enabled flag above. Either the below two or enabled should be used, not both.
           # # kubeletMetricsEnabled enables kubelet metrics.
-          # kubeletMetricsEnabled: true
+          kubeletMetricsEnabled: true
           # # cadvisorMetricsEnabled enables cadvisor metrics.
-          # cadvisorMetricsEnabled: true
+          cadvisorMetricsEnabled: true
           # # probesMetricsEnabled enables probes metrics.
-          # probesMetricsEnabled: true
+          probesMetricsEnabled: true
     # # The collector config can also be set to scrape a static Prometheus endpoint.
     # # Note: Kubernetes and Prometheus discovery can be enabled at the same time.
     # # In order to use this functionality, uncomment the below section, and make sure the target is updated to the correct endpoint.

@@ -696,7 +696,8 @@ opentelemetry-collector:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [otlp, logging, spanmetrics, otlp/tracing]
+          # exporters: [otlp, logging, spanmetrics, otlp/tracing]
+          exporters: [logging, spanmetrics, otlp/tracing]
         metrics:
           receivers: [otlp, spanmetrics]
           processors: [memory_limiter, filter/ottl, transform, batch]
@@ -731,7 +732,7 @@ jaeger:
     enabled: false
 
 prometheus:
-  enabled: true
+  enabled: false
   alertmanager:
     enabled: false
   configmapReload:

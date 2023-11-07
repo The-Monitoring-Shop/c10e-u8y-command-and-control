@@ -32,10 +32,5 @@ kubectl apply -f $WORKING/c10e_col_conf/chronocollector.yaml --namespace collect
 
 # Install the prometheus-node-exporter
 helm install prometheus-node-exporter $WORKING/helm_charts/lab-gen-initial-build/charts/prometheus \
-  --values $WORKING/lab_gen_values/initial-values.yaml \
-  --set prometheus-node-exporter.enabled=true \
-  --set alertmanager.enabled=false \
-  --set kube-state-metrics.enabled=false \
-  --set prometheus-pushgateway.enabled=false \
-  --set server.remoteWrite[0].url='http://chronocollector.collectors.svc.cluster.local:3030/remote/write' \
+  --values $WORKING/lab_gen_values/values-prometheus-node-exporter.yaml \
   --namespace collectors
