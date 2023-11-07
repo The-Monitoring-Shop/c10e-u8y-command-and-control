@@ -8,16 +8,19 @@ Initially, you will need to configure your machine to access GCP via the GCloud 
 
 You can then SSH to the VM instance;
 
-`gcloud compute ssh university --tunnel-through-iap`
+`gcloud compute ssh university-psxw --tunnel-through-iap`
 
 NB:
-The VM name may have a suffix on the end of `university` - i.e. `university-xyza` - be sure to use this if it exists.
+The VM name may have a suffix on the end of `university` - i.e. `university-psxw` - be sure to use this if it exists.
 
 Daily, you will need to re-login to gcloud on your local machine, using `gcloud auth login`.
 
-Optionally, to enable better performance, for SSH and Web GUI via port-forward, install Python NumPy package;  
+Optionally, to enable better performance, for SSH and Web GUI via port-forward, install Python NumPy package;
+
 `$(gcloud info --format="value(basic.python_location)") -m pip install numpy`
+
 Any ssh/port-forward issues or errors relating to NumPy library, try the following env settings and run again;
+
 `export CLOUDSDK_PYTHON_SITEPACKAGES=1`
 
 ## Initial server setup
@@ -30,7 +33,15 @@ The following can be run to perform an initial (one-time) configuration of the d
 
 This is only required if the data disk has been rebuilt/deleted.
 
-It assumes the devicename for the data disk is `university`, presenting a symlinked disk of `/dev/disk/by-id/google-university -> /dev/sdb`, which can be checked by running `ls -l /dev/disk/by-id/google-*`.
+It assumes the devicename for the data disk is `university`, presenting a symlinked disk of
+
+`/dev/disk/by-id/google-university -> /dev/sdb`
+
+which can be checked by running
+
+`ls -l /dev/disk/by-id/google-*`.
+
+To create the data disk, run;
 
 `sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh | bash`
 
@@ -47,7 +58,9 @@ sudo bash /mnt/disks/google-university/shared_config/setupVM.sh
 
 ## Initial user config
 
-After your initial login, run the `bash /opt/shared_config/setupUser.sh` script to setup your user account on the VM.
+After your initial login, run the following script to setup your user account on the VM.
+
+`bash /opt/shared_config/setupUser.sh`
 
 ## Locations
 
@@ -71,6 +84,12 @@ To obtain k8s cluster credentials, for kubectl;
 ---
 
 # Labs
+
+Here is details of manually running lab controls.
+
+Each section contains a code section and some contain a `Run:` section.
+
+The `Run:` section shows the script to run and the code section shows equivalent code.
 
 ## Deploy
 
