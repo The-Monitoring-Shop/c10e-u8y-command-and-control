@@ -49,3 +49,15 @@ echo "================================"
 echo "Installing GCloud CLI components"
 echo "================================"
 sudo /mnt/disks/google-university/google-cloud-sdk/bin/gcloud components install gke-gcloud-auth-plugin
+
+echo "===================="
+echo "Setting up c10e user"
+echo "===================="
+
+# k8s
+mkdir -p /home/$USER/.kube
+cp /opt/shared_config/kube-config-university ~/.kube/config
+chmod 600 ~/.kube/config
+
+# GCloud RC
+echo "source /opt/shared_config/gcloudrc" >>~/.bashrc
