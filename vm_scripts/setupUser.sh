@@ -33,6 +33,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
     fi
 
     echo "source /opt/shared_config/gcloudrc" >>~/.bashrc
+    source ~/.bashrc
 
   else
     echo "Docker Setup"
@@ -56,8 +57,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
     echo "  Login with web browser"
     gh auth login
 
-    git config --global --add safe.directory /opt/git/c10e-u8y-command-and-control
-    git config --global --add safe.directory /opt/git/c10e-u8y-labs-gen
+    git config --global --add safe.directory '*'
 
     echo "GCloud CLI Setup"
     echo "----------------"
