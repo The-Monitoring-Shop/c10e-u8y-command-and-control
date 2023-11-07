@@ -57,8 +57,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   # sudo apt-get update
   # sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-  curl -fsSL https://get.docker.com -o get-docker.sh
-  sudo sh ./get-docker.sh
+  curl -fsSL https://get.docker.com | bash
 
   echo "..GH"
   echo "===="
@@ -87,10 +86,29 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "============================="
   echo "Setting up folders and access"
   echo "============================="
+
+  mount_point="/mnt/disks/google-university"
+
   sudo groupadd docker -g 999
   sudo usermod -aG docker $USER
   sudo su - $USER -c 'newgrp docker'
-  sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMChild.sh -o /opt/shared_config/setupVMChild.sh
+
+  echo "..mounting data disk"
+  echo "===================="
+  sudo mkdir -p $mount_point
+  sudo mount -o discard,defaults /dev/sdb $mount_point
+
+  echo "..setting access"
+  echo "================"
+  sudo chown -R root:docker $mount_point/git/
+  sudo chown -R root:docker $mount_point/google-cloud-sdk/
+  sudo chown -R root:docker $mount_point/shared_config/
+
+  echo "..symlinking folders"
+  echo "===================="
+  sudo ln -s $mount_point/git /opt/git
+  sudo ln -s $mount_point/shared_config /opt/shared_config
+  sudo ln -s $mount_point/google-cloud-sdk /opt/google-cloud-sdk
 
   echo "Branching to child script..."
   echo "============================"

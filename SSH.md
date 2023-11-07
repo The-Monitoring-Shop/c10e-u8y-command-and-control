@@ -22,14 +22,23 @@ Any ssh/port-forward issues or errors relating to NumPy library, try the followi
 
 ## Initial server setup
 
+There is 2 aspects to the inital server setup;
+
+### Data disk setup
+
+The following can be run to perform an initial (one-time) configuration of the data disk from github stored script.
+
+This is only required if the data disk has been rebuilt/deleted.
+
+It assumes the devicename for the data disk is `university`, presenting a symlinked disk of `/dev/disk/by-id/google-university -> /dev/sdb`.
+
+`sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh | bash`
+
+### Application setup
+
 The following can be run to perform an initial (one-time) configuration of the server from github stored script.
 
-```bash
-sudo mkdir -p /opt/shared_config
-sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVM.sh -o /opt/shared_config/setupVM.sh
-cd /opt/shared_config
-sudo bash ./setupVM.sh
-```
+`sudo bash /opt/shared_config/setupVM.sh`
 
 ## Initial user config
 
