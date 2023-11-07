@@ -30,7 +30,7 @@ The following can be run to perform an initial (one-time) configuration of the d
 
 This is only required if the data disk has been rebuilt/deleted.
 
-It assumes the devicename for the data disk is `university`, presenting a symlinked disk of `/dev/disk/by-id/google-university -> /dev/sdb`.
+It assumes the devicename for the data disk is `university`, presenting a symlinked disk of `/dev/disk/by-id/google-university -> /dev/sdb`, which can be checked by running `ls -l /dev/disk/by-id/google-*`.
 
 `sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh | bash`
 

@@ -30,6 +30,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   sudo apt-get update
   sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
 
+  echo "======================"
   echo "Starting setup for C&C"
   echo "======================"
   sudo install -m 0755 -d /etc/apt/keyrings
@@ -96,7 +97,7 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "============================="
 
   # Create docker groups
-  sudo groupadd docker -g 999
+  # sudo groupadd docker -g 999
   # Create c10e user, with docker as main group
   sudo useradd -m -s /usr/bin/bash -g 999 c10e
   # Add c10e user to sudoers

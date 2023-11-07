@@ -25,6 +25,7 @@ mount_point="/mnt/disks/google-university"
 
 echo "..mounting data disk"
 echo "===================="
+# TODO: Add check for whether already mounted
 sudo mkdir -p $mount_point
 sudo mount -o discard,defaults /dev/sdb $mount_point
 
@@ -47,4 +48,4 @@ source /opt/shared_config/gcloudrc
 echo "================================"
 echo "Installing GCloud CLI components"
 echo "================================"
-sudo gcloud components install gke-gcloud-auth-plugin
+sudo /mnt/disks/google-university/google-cloud-sdk/bin/gcloud components install gke-gcloud-auth-plugin
