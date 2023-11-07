@@ -92,6 +92,12 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "======"
   sudo apt-get install -y make
 
+  echo "============"
+  echo "Setting MOTD"
+  echo "============"
+  sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/99-c10e -o /etc/update-motd.d/99-c10e
+  sudo chmod +x /etc/update-motd.d/99-c10e
+
   echo "============================="
   echo "Creating default users/groups"
   echo "============================="

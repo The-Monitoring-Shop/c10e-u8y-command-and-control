@@ -63,4 +63,10 @@ echo "======================="
 sudo curl -fsSL https://sdk.cloud.google.com -o $mount_point/shared_config/installGCloudCLI.sh
 sudo bash $mount_point/shared_config/installGCloudCLI.sh --disable-prompts --install-dir=$mount_point
 
+echo "============"
+echo "Setting MOTD"
+echo "============"
+sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/99-c10e -o /etc/update-motd.d/99-c10e
+sudo chmod +x /etc/update-motd.d/99-c10e
+
 sudo touch $mount_point/setupVMDisk.done
