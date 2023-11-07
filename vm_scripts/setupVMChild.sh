@@ -21,6 +21,8 @@ echo "============================="
 echo "Setting up folders and access"
 echo "============================="
 
+mount_point="/mnt/disks/google-university"
+
 echo "..mounting data disk"
 echo "===================="
 sudo mkdir -p $mount_point

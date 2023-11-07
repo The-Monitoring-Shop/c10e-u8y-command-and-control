@@ -104,9 +104,9 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
 
   echo "Branching to child script..."
   echo "============================"
-  sudo su - c10e -c 'bash /mnt/disks/google-university/shared_config/setupVMChild.sh'
+  sudo su - c10e -c "bash $mount_point/shared_config/setupVMChild.sh"
 
-  touch $mount_point/setupVM.done
+  sudo touch $mount_point/setupVM.done
 
 else
   echo "Sorry, this script currently supports Ubuntu only."

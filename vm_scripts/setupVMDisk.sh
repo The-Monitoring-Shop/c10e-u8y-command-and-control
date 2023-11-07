@@ -60,4 +60,4 @@ echo "======================="
 sudo curl -fsSL https://sdk.cloud.google.com -o $mount_point/shared_config/installGCloudCLI.sh
 sudo bash $mount_point/shared_config/installGCloudCLI.sh --disable-prompts --install-dir=$mount_point
 
-touch $mount_point/setupVMDisk.done
+sudo touch $mount_point/setupVMDisk.done
