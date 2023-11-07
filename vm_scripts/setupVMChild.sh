@@ -22,15 +22,6 @@ echo "Setting up folders and access"
 echo "============================="
 
 mount_point="/mnt/disks/google-university"
-mount_check=$(mount | grep $mount_point | wc -l)
-
-# If we havent already mounted
-if [[ $mount_check == 0 ]]; then
-  echo "..mounting data disk"
-  echo "===================="
-  sudo mkdir -p $mount_point
-  sudo mount -o discard,defaults /dev/sdb $mount_point
-fi
 
 echo "..setting access"
 echo "================"

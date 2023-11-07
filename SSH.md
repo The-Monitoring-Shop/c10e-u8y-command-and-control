@@ -38,7 +38,12 @@ It assumes the devicename for the data disk is `university`, presenting a symlin
 
 The following can be run to perform an initial (one-time) configuration of the server from github stored script.
 
-`sudo bash /mnt/disks/google-university/shared_config/setupVM.sh`
+This is required if the VM has been recycled (assuming the data disk is already setup)
+
+```bash
+sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/mountVMDisk.sh | bash
+sudo bash /mnt/disks/google-university/shared_config/setupVM.sh
+```
 
 ## Initial user config
 
