@@ -107,9 +107,33 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   # Add c10e user to sudoers
   echo "c10e  ALL=(ALL) NOPASSWD:ALL" | sudo tee --append /etc/sudoers.d/c10e
 
-  echo "Branching to child script..."
-  echo "============================"
-  sudo su - c10e -c "bash $mount_point/shared_config/setupVMChild.sh"
+  echo "============================="
+  echo "Setting up folders and access"
+  echo "============================="
+
+  echo "..symlinking folders"
+  echo "===================="
+  sudo ln -s $mount_point/git /opt/git
+  sudo ln -s $mount_point/google-cloud-sdk /opt/google-cloud-sdk
+  sudo ln -s $mount_point/shared_config /opt/shared_config
+
+  echo "..setting access"
+  echo "================"
+  sudo chown -R c10e:docker $mount_point/git/
+  sudo chown -R c10e:docker $mount_point/google-cloud-sdk/
+  sudo chown -R c10e:docker $mount_point/shared_config/
+
+  echo "..setting attribs"
+  echo "================="
+  sudo chmod -R g+w $mount_point/git/
+  sudo chmod -R g+w $mount_point/google-cloud-sdk/
+  sudo chmod -R g+w $mount_point/shared_config/
+
+  echo "================================"
+  echo "Installing GCloud CLI components"
+  echo "================================"
+  source /opt/shared_config/gcloudrc
+  sudo /mnt/disks/google-university/google-cloud-sdk/bin/gcloud components install gke-gcloud-auth-plugin
 
   sudo touch $mount_point/setupVM.done
 
