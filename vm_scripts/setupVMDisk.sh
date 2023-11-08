@@ -68,7 +68,6 @@ echo "..downloading scripts"
 echo "====================="
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh -o $mount_point/shared_config/setupVMDisk.sh
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVM.sh -o $mount_point/shared_config/setupVM.sh
-sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMChild.sh -o $mount_point/shared_config/setupVMChild.sh
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupUser.sh -o $mount_point/shared_config/setupUser.sh
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/gcloudrc -o $mount_point/shared_config/gcloudrc
 sudo chmod +x $mount_point/shared_config/*
