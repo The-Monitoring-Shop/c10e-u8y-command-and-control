@@ -73,6 +73,7 @@ sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-c
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVM.sh -o $mount_point/shared_config/setupVM.sh
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupUser.sh -o $mount_point/shared_config/setupUser.sh
 sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/gcloudrc -o $mount_point/shared_config/gcloudrc
+sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupApache.sh -o $mount_point/shared_config/setupApache.sh
 sudo chmod +x $mount_point/shared_config/*
 
 echo "=========="

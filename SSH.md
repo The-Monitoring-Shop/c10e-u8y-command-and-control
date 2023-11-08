@@ -35,7 +35,7 @@ export CLOUDSDK_PYTHON_SITEPACKAGES=1
 
 ## Initial server setup
 
-There are 2 aspects to the inital server setup - both only need to be run once;
+There are 3 aspects to the inital server setup - all only need to be run once;
 
 ### Data disk setup
 
@@ -67,6 +67,16 @@ This is required if the VM has been recycled (assuming the data disk is already 
 
 ```bash
 sudo bash /mnt/disks/google-university/shared_config/setupVM.sh
+```
+
+### Apache setup
+
+The following can be run to perform an initial (one-time) configuration of Apache on the server.
+
+This is required if the VM has been recycled (assuming the data disk is already setup)
+
+```bash
+sudo bash /mnt/disks/google-university/shared_config/setupApache.sh
 ```
 
 ## Initial user config
