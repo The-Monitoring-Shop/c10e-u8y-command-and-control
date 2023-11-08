@@ -283,7 +283,7 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4318/v1/traces
     resources:
       limits:
-        memory: 100Mi
+        memory: 200Mi
 
   featureflagService:
     enabled: true
