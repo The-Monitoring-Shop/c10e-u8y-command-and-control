@@ -125,9 +125,15 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
 
   echo "..setting attribs"
   echo "================="
-  sudo chmod -R g+w $mount_point/git/
-  sudo chmod -R g+w $mount_point/google-cloud-sdk/
-  sudo chmod -R g+w $mount_point/shared_config/
+
+  sudo chmod g+s $mount_point/git
+  sudo find $mount_point/git -type d -exec chmod g+s {} +
+
+  sudo chmod g+s $mount_point/google-cloud-sdk
+  sudo find $mount_point/google-cloud-sdk -type d -exec chmod g+s {} +
+
+  sudo chmod g+s $mount_point/shared_config
+  sudo find $mount_point/shared_config -type d -exec chmod g+s {} +
 
   echo "================================"
   echo "Installing GCloud CLI components"
