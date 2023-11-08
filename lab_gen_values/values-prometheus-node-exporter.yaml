@@ -5,6 +5,7 @@ configmapReload:
 server:
   extraFlags:
     - "enable-feature=exemplar-storage"
+  retention: 6h
   global:
     scrape_interval: 5s
     scrape_timeout: 3s

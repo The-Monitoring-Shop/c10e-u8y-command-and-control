@@ -8,24 +8,34 @@ Initially, you will need to configure your machine to access GCP via the GCloud 
 
 You can then SSH to the VM instance;
 
-`gcloud compute ssh university-psxw --tunnel-through-iap`
+```bash
+gcloud compute ssh university-psxw --tunnel-through-iap
+```
 
 NB:
 The VM name may have a suffix on the end of `university` - i.e. `university-psxw` - be sure to use this if it exists.
 
-Daily, you will need to re-login to gcloud on your local machine, using `gcloud auth login`.
+Daily, you will need to re-login to gcloud on your local machine, using
+
+```bash
+gcloud auth login
+```
 
 Optionally, to enable better performance, for SSH and Web GUI via port-forward, install Python NumPy package;
 
-`$(gcloud info --format="value(basic.python_location)") -m pip install numpy`
+```bash
+$(gcloud info --format="value(basic.python_location)") -m pip install numpy
+```
 
 Any ssh/port-forward issues or errors relating to NumPy library, try the following env settings and run again;
 
-`export CLOUDSDK_PYTHON_SITEPACKAGES=1`
+```bash
+export CLOUDSDK_PYTHON_SITEPACKAGES=1
+```
 
 ## Initial server setup
 
-There is 2 aspects to the inital server setup - both only need to be run once;
+There are 2 aspects to the inital server setup - both only need to be run once;
 
 ### Data disk setup
 
@@ -39,11 +49,15 @@ It assumes the devicename for the data disk is `university`, presenting a symlin
 
 which can be checked by running
 
-`ls -l /dev/disk/by-id/google-*`.
+```bash
+ls -l /dev/disk/by-id/google-*
+```
 
 To create the data disk, run;
 
-`sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh | bash`
+```bash
+sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/setupVMDisk.sh | bash
+```
 
 ### Application setup
 
@@ -52,7 +66,6 @@ The following can be run to perform an initial (one-time) configuration of the s
 This is required if the VM has been recycled (assuming the data disk is already setup)
 
 ```bash
-sudo curl -fsSL https://raw.githubusercontent.com/The-Monitoring-Shop/c10e-u8y-command-and-control/main/vm_scripts/mountVMDisk.sh | bash
 sudo bash /mnt/disks/google-university/shared_config/setupVM.sh
 ```
 
@@ -60,7 +73,9 @@ sudo bash /mnt/disks/google-university/shared_config/setupVM.sh
 
 After your initial login, run the following script to setup your user account on the VM.
 
-`bash /opt/shared_config/setupUser.sh`
+```bash
+bash /opt/shared_config/setupUser.sh
+```
 
 ## Locations
 
@@ -78,8 +93,11 @@ Under `/opt` the following locations exist;
 
 The below section(s) are covered via the `/opt/shared_config/setupUser.sh` script on the GCP VM, and provided here for completness.
 
-To obtain k8s cluster credentials, for kubectl;  
-`gcloud container clusters get-credentials university --zone=us-central1`
+To obtain k8s cluster credentials, for kubectl;
+
+```bash
+gcloud container clusters get-credentials university --zone=us-central1
+```
 
 ---
 
