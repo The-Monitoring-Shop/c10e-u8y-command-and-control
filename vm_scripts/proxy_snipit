@@ -1,0 +1,23 @@
+ProxyPass "/html"  "http://localhost:8090/html"
+ProxyPassReverse "/html"  "http://localhost:8090/html"
+
+ProxyPass "/css"  "http://localhost:8090/css"
+ProxyPassReverse "/css"  "http://localhost:8090/css"
+
+ProxyPass "/fonts"  "http://localhost:8090/fonts"
+ProxyPassReverse "/fonts"  "http://localhost:8090/fonts"
+
+ProxyPass "/images"  "http://localhost:8090/images"
+ProxyPassReverse "/images"  "http://localhost:8090/images"
+
+ProxyPass "/favicon.ico"  "http://localhost:8090/favicon.ico"
+ProxyPassReverse "/favicon.ico"  "http://localhost:8090/favicon.ico"
+
+ProxyPass "/api"  "http://localhost:8090/api"
+ProxyPassReverse "/api"  "http://localhost:8090/api"
+
+ProxyPass "/action_login"  "http://localhost:8090/action_login"
+ProxyPassReverse "/action_login"  "http://localhost:8090/action_login"
+
+ProxyPass "/action_logout"  "http://localhost:8090/action_logout"
+ProxyPassReverse "/action_logout"  "http://localhost:8090/action_logout"
