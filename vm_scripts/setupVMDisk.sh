@@ -24,7 +24,7 @@ mount_point="/mnt/disks/google-university"
 mount_check=$(mount | grep $mount_point | wc -l)
 # Is disk mounted
 if [[ $mount_check == 0 ]]; then
-
+  echo "..disk not mounted, checking if device is formatted"
   # Is disk formatted
   format_check=$(lsblk -f | grep $mount_dev_name | cut -d' ' -f6)
   if [[ ! $format_check == "ext4" ]]; then
@@ -33,6 +33,7 @@ if [[ $mount_check == 0 ]]; then
     sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $mount_dev
   fi
 
+  echo "..disk formatted, checking if fstab entry exists"
   # Do we have entry in fstab
   fstab_check=$(grep $mount_point /etc/fstab | wc -l)
   if [[ $fstab_check == 0 ]]; then
@@ -44,10 +45,12 @@ if [[ $mount_check == 0 ]]; then
     echo "UUID=$mount_uuid $mount_point ext4 discard,defaults,nofail 0 2" | sudo tee --append /etc/fstab
   fi
 
+  echo "..fstab entry exists, trying to mount"
   # Try and mount
   sudo mount -a
 
 else
+  echo "..disk mounted, checking if script already run"
   # If we have already mounted
   if [[ -f $mount_point/setupVMDisk.done ]]; then
     echo "This script has already been run!"
