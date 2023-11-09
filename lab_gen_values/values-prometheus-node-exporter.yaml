@@ -16,7 +16,7 @@ server:
     servicePort: 9090
   resources:
     limits:
-      memory: 1536Mi
+      memory: 2048Mi
 
 serverFiles:
   prometheus.yml:
