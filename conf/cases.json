@@ -30,6 +30,12 @@
             "name": "Errors #4",
             "desc": "Break the calling URL from the frontend to the adservice",
             "type": "values"
+        },
+        {
+            "id":   "0020",
+            "name": "Performance #1",
+            "desc": "Slowdown the payment service",
+            "type": "values"
         }
     ]
 }
