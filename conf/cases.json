@@ -36,6 +36,12 @@
             "name": "Performance #1",
             "desc": "Slowdown the payment service",
             "type": "values"
+        },
+        {
+            "id":   "0030",
+            "name": "Business #1",
+            "desc": "Break all Mastercard payments",
+            "type": "values"
         }
     ]
 }

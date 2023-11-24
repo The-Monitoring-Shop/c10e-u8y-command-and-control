@@ -1,0 +1,21 @@
+components:
+  paymentService:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8080
+    env:
+      - name: PAYMENT_SERVICE_PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: LABGEN_CASE
+        value: "0030"
+    resources:
+      limits:
+        memory: 200Mi
+    securityContext:
+      runAsUser: 1000 # node
+      runAsGroup: 1000
+      runAsNonRoot: true
