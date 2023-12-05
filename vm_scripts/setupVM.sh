@@ -126,13 +126,16 @@ if [[ $(uname -v) =~ "Ubuntu" ]]; then
   echo "..setting attribs"
   echo "================="
 
-  sudo chmod g+s $mount_point/git
+  #sudo chmod g+s $mount_point/git
+  sudo sudo chmod -R g+rwX $mount_point/git
   sudo find $mount_point/git -type d -exec chmod g+s {} +
 
-  sudo chmod g+s $mount_point/google-cloud-sdk
+  #sudo chmod g+s $mount_point/google-cloud-sdk
+  sudo sudo chmod -R g+rwX $mount_point/google-cloud-sdk
   sudo find $mount_point/google-cloud-sdk -type d -exec chmod g+s {} +
 
-  sudo chmod g+s $mount_point/shared_config
+  #sudo chmod g+s $mount_point/shared_config
+  sudo sudo chmod -R g+rwX $mount_point/shared_config
   sudo find $mount_point/shared_config -type d -exec chmod g+s {} +
 
   echo "================================"
