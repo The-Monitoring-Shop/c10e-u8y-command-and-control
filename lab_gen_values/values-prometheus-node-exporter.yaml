@@ -53,9 +53,11 @@ serverFiles:
 
           # Added to restrict target to only port from annotation
           - source_labels:
-              [__address__]
-            action: keep
-            regex: ^([^:]+)(:(9464|8888))
+              [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
 
         # Added as os_description was showing as high memory usage on tsdb-status and isnt required
         metric_relabel_configs:
