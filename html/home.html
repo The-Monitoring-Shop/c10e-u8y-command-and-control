@@ -405,7 +405,7 @@
                 {
                     let opt = document.createElement('option');
                     opt.value = cases.cases[inc_case].id;
-                    opt.innerHTML = cases.cases[inc_case].name;
+                    opt.innerHTML = cases.cases[inc_case].id + " - " + cases.cases[inc_case].name;
                     select.appendChild(opt);
                     if(opt.value == case_id)
                     {

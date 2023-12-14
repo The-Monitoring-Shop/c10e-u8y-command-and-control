@@ -42,6 +42,12 @@
             "name": "Business #1",
             "desc": "Break all Mastercard payments",
             "type": "values"
+        },
+        {
+            "id":   "0040",
+            "name": "Combined #1",
+            "desc": "Run both case #0014 and #0020 at the same time",
+            "type": "values"
         }
     ]
 }
