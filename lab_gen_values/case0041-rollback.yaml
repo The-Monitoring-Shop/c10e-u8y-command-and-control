@@ -1,0 +1,37 @@
+components:
+  shippingService:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8080
+    env:
+      - name: SHIPPING_SERVICE_PORT
+        value: "8080"
+      - name: QUOTE_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
+    resources:
+      limits:
+        memory: 20Mi
+  paymentService:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8080
+    env:
+      - name: PAYMENT_SERVICE_PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: LABGEN_CASE
+        value: "0000"
+    resources:
+      limits:
+        memory: 200Mi
+    securityContext:
+      runAsUser: 1000 # node
+      runAsGroup: 1000
+      runAsNonRoot: true

@@ -32,6 +32,12 @@
             "type": "values"
         },
         {
+            "id":   "0015",
+            "name": "Errors #5",
+            "desc": "Break the calling URL from the shipping service to the quote service",
+            "type": "values"
+        },
+        {
             "id":   "0020",
             "name": "Performance #1",
             "desc": "Slowdown the payment service",
@@ -47,6 +53,12 @@
             "id":   "0040",
             "name": "Combined #1",
             "desc": "Run both case #0014 and #0020 at the same time",
+            "type": "values"
+        },
+        {
+            "id":   "0041",
+            "name": "Combined #2",
+            "desc": "Run both case #0015 and #0020 at the same time",
             "type": "values"
         }
     ]
