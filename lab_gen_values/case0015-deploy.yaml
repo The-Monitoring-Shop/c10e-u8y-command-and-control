@@ -1,18 +1,23 @@
 components:
-  shippingService:
+  quoteService:
     enabled: true
     useDefault:
       env: true
     service:
       port: 8080
     env:
-      - name: SHIPPING_SERVICE_PORT
+      - name: QUOTE_SERVICE_PORT
         value: "8080"
-      - name: QUOTE_SERVICE_ADDR
-        value: 'http://{{ include "otel-demo.name" . }}-xquoteservice:8080'
-      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-        value: http://$(OTEL_COLLECTOR_NAME):4317/v1/traces
+      - name: OTEL_PHP_AUTOLOAD_ENABLED
+        value: "true"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4318
+      - name: LABGEN_CASE
+        value: "0015"
     resources:
       limits:
-        memory: 20Mi
-
+        memory: 40Mi
+    securityContext:
+      runAsUser: 33 # www-data
+      runAsGroup: 33
+      runAsNonRoot: true

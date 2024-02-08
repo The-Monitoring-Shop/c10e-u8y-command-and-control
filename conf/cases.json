@@ -34,7 +34,7 @@
         {
             "id":   "0015",
             "name": "Errors #5",
-            "desc": "Break the calling URL from the shipping service to the quote service",
+            "desc": "Intermittant Divide by zero error in quote service",
             "type": "values"
         },
         {
