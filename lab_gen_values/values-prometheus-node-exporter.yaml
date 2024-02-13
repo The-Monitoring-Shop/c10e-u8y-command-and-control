@@ -30,12 +30,12 @@ serverFiles:
     remote_write:
       - url: http://chronocollector.collectors.svc.cluster.local:3030/remote/write
         queue_config:
-          capacity: 2500
-          max_shards: 200
+          #capacity: 2500
+          #max_shards: 200
           min_shards: 3
-          max_samples_per_send: 500
-        metadata_config:
-          max_samples_per_send: 500
+          #max_samples_per_send: 500
+        #metadata_config:
+          #max_samples_per_send: 500
 
     scrape_configs:
 
