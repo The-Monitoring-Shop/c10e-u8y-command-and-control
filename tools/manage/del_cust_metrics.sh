@@ -1,7 +1,7 @@
-# Use chronoctl to delete all custom metrics ending in _quoteservice
+# Use chronoctl to delete all custom metrics ending in _paymentservice
 
 
-chronoctl trace-metrics-rules list |grep slug |grep quoteservice  |sed 's/ //g' | sed 's/slug://g' > /tmp/met_list
+chronoctl trace-metrics-rules list |grep slug |grep paymentservice  |sed 's/ //g' | sed 's/slug://g' > /tmp/met_list
 
 echo "The following Custom Metrics will be deleted:"
 echo
