@@ -44,6 +44,12 @@
             "type": "values"
         },
         {
+            "id":   "0021",
+            "name": "Performance #2",
+            "desc": "Slowdown the process_recommended_product operation for a specific product ID",
+            "type": "values"
+        },
+        {
             "id":   "0030",
             "name": "Business #1",
             "desc": "Break all Mastercard payments",

@@ -1,0 +1,66 @@
+components:
+  frontend:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8080
+    env:
+      - name: FRONTEND_PORT
+        value: "8080"
+      - name: FRONTEND_ADDR
+        value: :8080
+      - name: AD_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-adservice:8080'
+      - name: CART_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-cartservice:8080'
+      - name: CHECKOUT_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-checkoutservice:8080'
+      - name: CURRENCY_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+      - name: RECOMMENDATION_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-recommendationservice:8080'
+      - name: SHIPPING_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: WEB_OTEL_SERVICE_NAME
+        value: frontend-web
+      - name: PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: http://localhost:4318/v1/traces # This expects users to use `kubectl port-forward ...`
+      - name: LABGEN_CASE
+        value: "0021"
+    resources:
+      limits:
+        memory: 500Mi
+    securityContext:
+      runAsUser: 1001 # nextjs
+      runAsGroup: 1001
+      runAsNonRoot: true
+
+  recommendationService:
+    enabled: true
+    useDefault:
+      env: true
+    service:
+      port: 8080
+    env:
+      - name: RECOMMENDATION_SERVICE_PORT
+        value: "8080"
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://$(OTEL_COLLECTOR_NAME):4317
+      - name: LABGEN_CASE
+        value: "0021"
+    resources:
+      limits:
+        memory: 500Mi # This is high to enable supporting the recommendationCache feature flag use case
