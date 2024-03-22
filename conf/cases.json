@@ -38,6 +38,12 @@
             "type": "values"
         },
         {
+            "id":   "0016",
+            "name": "Errors #6",
+            "desc": "Case checkoutservice to fail to call emailservice. This results in an error in the trace, but does not fail the request as a whole.",
+            "type": "values"
+        },
+        {
             "id":   "0020",
             "name": "Performance #1",
             "desc": "Slowdown the payment service",
