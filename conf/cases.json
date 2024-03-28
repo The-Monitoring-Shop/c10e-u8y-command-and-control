@@ -72,6 +72,12 @@
             "name": "Combined #2",
             "desc": "Run both case #0015 and #0020 at the same time",
             "type": "values"
+        },
+        {
+            "id":   "0042",
+            "name": "Combined #3",
+            "desc": "Run both case #0016 and #0021 at the same time",
+            "type": "values"
         }
     ]
 }
