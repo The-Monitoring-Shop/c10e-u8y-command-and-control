@@ -3,7 +3,7 @@
 
 chronoctl trace-metrics-rules list |grep slug |grep paymentservice  |sed 's/ //g' | sed 's/slug://g' > /tmp/met_list
 
-echo "The following Custom Metrics will be deleted:"
+echo "The following Custom Metrics for Tracing Essentials will be deleted:"
 echo
 
 cat /tmp/met_list
@@ -28,4 +28,33 @@ else
 
 	echo "Aboriting."
 fi
+
+chronoctl trace-metrics-rules list |grep slug |grep recommended-product  |sed 's/ //g' | sed 's/slug://g' > /tmp/met_list
+
+echo "The following Custom Metrics for Troubleshooting with Tracing will be deleted:"
+echo
+
+cat /tmp/met_list
+
+echo
+
+read -e -p "Continue? [y/N]" choice
+
+if [ "$choice" == "y" ] || [ "$choice" == "Y" ]
+then
+
+        for metric in `cat /tmp/met_list`
+        do
+
+                echo "Deleting Custom Metric - "$metric
+
+                chronoctl trace-metrics-rules delete $metric
+
+        done
+
+else
+
+        echo "Aboriting."
+fi
+
 
