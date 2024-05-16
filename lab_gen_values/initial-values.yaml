@@ -184,6 +184,8 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: OTLP_LOGS_EXPORTER
         value: otlp
+      #- name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+      #value: base2_exponential_bucket_histogram
     resources:
       limits:
         memory: 300Mi
@@ -673,6 +675,13 @@ opentelemetry-collector:
         compression: gzip
         headers:
           API-Token: f9e26fd82993cc494a6a4b9af77537f8d3db84db6e226b0556d10cb2da1e224e
+      otlp/metrics:
+        endpoint: university.chronosphere.io:443
+        retry_on_failure:
+          enabled: false
+        compression: gzip
+        headers:
+          API-Token: f9e26fd82993cc494a6a4b9af77537f8d3db84db6e226b0556d10cb2da1e224e
 
     processors:
       # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/737
@@ -702,7 +711,8 @@ opentelemetry-collector:
         metrics:
           receivers: [otlp, spanmetrics]
           processors: [memory_limiter, filter/ottl, transform, batch]
-          exporters: [prometheus, logging]
+          #exporters: [prometheus, logging]
+          exporters: [otlp/metrics, logging]
 
 jaeger:
   enabled: false
