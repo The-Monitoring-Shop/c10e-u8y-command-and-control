@@ -184,8 +184,8 @@ components:
         value: http://$(OTEL_COLLECTOR_NAME):4317
       - name: OTLP_LOGS_EXPORTER
         value: otlp
-      #- name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
-      #value: base2_exponential_bucket_histogram
+      - name: OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION
+        value: base2_exponential_bucket_histogram
     resources:
       limits:
         memory: 300Mi

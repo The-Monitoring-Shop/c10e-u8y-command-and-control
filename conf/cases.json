@@ -56,6 +56,12 @@
             "type": "values"
         },
         {
+            "id":   "0022",
+            "name": "Performance #3",
+            "desc": "Slowdown the adservice for a proportion of add requests",
+            "type": "values"
+        },
+        {
             "id":   "0030",
             "name": "Business #1",
             "desc": "Break all Mastercard payments",
