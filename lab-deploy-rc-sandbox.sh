@@ -3,16 +3,14 @@
 #
 # The Monitoring Shop & Chronosphere
 #
-# lab-deploy.sh
+# lab-deploy-rc-sandbox.sh
 #
 #   Deploy a initial, clean install of the c10e-u8y-labs-gen application into a k8s cluster namespace
 #
 # Version History
 #
 # Version	  Date		    Author		        Description
-# 0.0.0	    09/09/2023	Bill Fox	        Started development
-# 0.0.1	    22/09/2023	Bill Fox	        MVP
-# 0.1.0	    24/10/2023	Mark Kelly-Smith	Updated for multi lab use
+# 0.1.0	    11/07/2024	Mark Kelly-Smith	MVP
 # ********************************************************************************************************************************************************
 
 # Check we have a lab name to use
