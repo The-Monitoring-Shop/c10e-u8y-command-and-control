@@ -2,6 +2,20 @@
 
 ## GCloud
 
+### CLI
+
+To setup SSH access from your own machine, you must first setup the GCloud CLI.
+
+Install;
+
+- <https://cloud.google.com/sdk/docs/install>
+
+Set Defaults, if not set as part of init;
+
+- <https://cloud.google.com/compute/docs/gcloud-compute#set_default_zone_and_region_in_your_local_client>
+- `gcloud config set compute/region us-central1`
+- `gcloud config set compute/zone us-central1-a`
+
 ### IAM
 
 For Compute Engine VM to Manage k8s Cluster
@@ -35,20 +49,6 @@ container.roles.update
 
 3. Add roles/logging.viewer
 4. Assign the custom role to the service account used by the VM instance
-
-### CLI
-
-To setup SSH access from your own machine, you must first setup the GCloud CLI.
-
-Install;
-
-- <https://cloud.google.com/sdk/docs/install>
-
-Set Defaults, if not set as part of init;
-
-- <https://cloud.google.com/compute/docs/gcloud-compute#set_default_zone_and_region_in_your_local_client>
-- `gcloud config set compute/region us-central1`
-- `gcloud config set compute/zone us-central1-a`
 
 ---
 
