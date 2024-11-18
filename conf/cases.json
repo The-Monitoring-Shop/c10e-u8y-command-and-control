@@ -84,6 +84,12 @@
             "name": "Combined #3",
             "desc": "Run both case #0016 and #0021 at the same time",
             "type": "values"
+        },
+        {
+            "id":   "0043",
+            "name": "Combined #4",
+            "desc": "Run DDx use cases: errors in check out for Coeur d'Alene addresses and slowdown when adding product 2ZYFJ3GM2N to cart",
+            "type": "values"
         }
     ]
 }
