@@ -696,6 +696,11 @@ opentelemetry-collector:
         metrics:
           metric:
             - 'name == "queueSize"'
+      attributes:
+        actions:
+          - key: lab
+            value: '{{ include "otel-demo.name" . }}'
+            action: upsert
 
     connectors:
       spanmetrics:
@@ -705,12 +710,12 @@ opentelemetry-collector:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, batch, attributes]
           # exporters: [otlp, logging, spanmetrics, otlp/tracing]
           exporters: [logging, spanmetrics, otlp/tracing]
         metrics:
           receivers: [otlp, spanmetrics]
-          processors: [memory_limiter, filter/ottl, transform, batch]
+          processors: [memory_limiter, filter/ottl, transform, batch, attributes]
           #exporters: [prometheus, logging]
           exporters: [otlp/metrics, logging]
 
